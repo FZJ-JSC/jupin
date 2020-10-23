@@ -163,6 +163,7 @@ input{
 	margin: 0px auto;
 	display: none;
 	padding:5px;
+	font-family: "Fira Code", "Courier New", monospace;
 }
 
 #output{
@@ -195,6 +196,9 @@ table{
 	color: #023d6b;
 	text-align: center;
 	display:inline-block;
+}
+main #output table {
+	font-family: "Fira Code", "Courier New", monospace;
 }
 
 td{
