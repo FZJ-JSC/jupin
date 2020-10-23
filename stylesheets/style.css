@@ -42,6 +42,11 @@ main{
 form{
 	margin:20px;
 }
+#selection form fieldset {
+	display: inline-block;
+	width: 22%;
+	border: 1px solid #EEE;
+}
 
 .onoffswitch {
     position: relative; 
@@ -126,21 +131,16 @@ input{
  	float:right;
  	box-shadow: 0 2px 1px 0 rgba(0,0,0,0.2);
  }
+
+ #selection form fieldset select {
+ 	width: initial;
+ }
  
  img{
  	float:left;
  	height:1em;
  	margin-right: 5px;
  }
-
-#distribution_core, #distribution_socket{
-	margin-left:10px;
-	width:30%;
-}
-
-#distribution_node{
-	width:30%;
-}
 
 #generate{
 	width:60%;

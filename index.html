@@ -85,20 +85,29 @@
 					  
 					  <img src="images/help.png" alt="help" title="Choose a distribution-option. The first part controls the distribution of the task over the nodes. Block: Distribute tasks to a node such that consecutive tasks share a node. Cyclic : Distribute tasks to a node such that consecutive tasks are distributed over consecutive nodes (in a round-robin fashion). The second part controls the distribution of tasks over sockets inside one node. Block: Each socket is first filled with tasks before the next socket will be used. Cyclic: Each task will be assigned to the next socket(s) in a round-robin fashion. Fcyclic: Each thread inside a task will be assigned to the next socket in a round-robin fashion, spreading the task itself as much as possible over all sockets. fcyclic implies cyclic. The third part controls the distribution of tasks over cores inside one node. Block: Each core is first filled with tasks before the next core will be used. Cyclic: Each task will be assigned to the next core(s) in a round-robin fashion. The threads of a task will fill the cores. Fcyclic: Each thread inside a task will be assigned to the next core in a round-robin fashion, spreading the task itself as much as possible over all cores. fcyclic implies cyclic.">
 					  <label for="distribution">Distribution:</label><br><br>
-					  <select id="distribution_core" onchange="generateNodeLayout()">
-					      <option selected>fcyclic</option>
-					      <option>block</option>
-					      <option>cyclic</option>
-					  </select>
-					  <select id="distribution_socket" onchange="generateNodeLayout()">
-					      <option selected>cyclic</option>
-					      <option>block</option>
-					      <option>fcyclic</option>
-					  </select>
-					  <select id="distribution_node" onchange="generateNodeLayout()">
-					      <option selected>block</option>
-					      <option>cyclic</option>
-					  </select>
+					  <fieldset>
+					      <legend>Core</legend>
+						  <select id="distribution_core" onchange="generateNodeLayout()">
+						      <option selected>fcyclic</option>
+						      <option>block</option>
+						      <option>cyclic</option>
+						  </select>
+					  </fieldset>
+					  <fieldset>
+					      <legend>Socket</legend>
+						  <select id="distribution_socket" onchange="generateNodeLayout()">
+						      <option selected>cyclic</option>
+						      <option>block</option>
+						      <option>fcyclic</option>
+						  </select>
+					  </fieldset>
+					  <fieldset>
+					      <legend>Node</legend>
+						  <select id="distribution_node" onchange="generateNodeLayout()">
+						      <option selected>block</option>
+						      <option>cyclic</option>
+						  </select>
+					  </fieldset>
 					  
 			
 					  <br><br><br>
