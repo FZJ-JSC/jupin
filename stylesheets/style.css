@@ -5,6 +5,13 @@ body{
 	height:100vh;
 	overflow: hidden;
 }
+
+a{
+	text-decoration:none;
+	color: white;
+	font-family: Trebuche, Arial, sans-serif; 
+}
+
 header{
 	font-family: Trebuche, Arial, sans-serif; 
     font-weight: bolder;
@@ -16,15 +23,35 @@ header{
 	padding-left: 10px;
 	font-size: 100%;
 	position: absolute;
-    	top: 0;
+    top: 0;
 }
 
 main{
 	margin: 0px auto;
 	margin-top:50px;
-	width: 90%;
+	width: 95%;
 	height:calc(100vh - 100px);
 	font-family: Trebuche, Arial, sans-serif; 
+}
+
+h5{
+	color: #023d6b;
+}
+
+form{
+	margin:20px;
+}
+
+input{
+	width: 36%;
+	float: right;
+ 	box-shadow: 0 1px 1px 0 rgba(0,0,0,0.2);
+}
+
+select{
+	width:39%;
+ 	float:right;
+ 	background-color: white;
 }
 
 .two-column{
@@ -32,121 +59,33 @@ main{
 }
 
 #selection{
-	width:30%;
+	width:20%;
 	height:100%;
 	position:relative;
 	background-color: white;
 	overflow:scroll;
 }
-
-form{
-	margin:20px;
-}
 #selection form fieldset {
-	display: inline-block;
-	width: 22%;
+	display:inline-block;
+	width:42%;
+	margin-left:53%;
 	border: 1px solid #EEE;
 }
 
-.onoffswitch {
-    position: relative; 
-    float:right;
-    width: 90px;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select: none;
+.fa-info-circle{
+	color: rgba(2, 61, 107, 0.3);
+	align-items:center;
 }
-.onoffswitch-checkbox {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-.onoffswitch-label {
-    display: block;
-    overflow: hidden; 
-    cursor: pointer;
-    border: 2px solid #999999; 
-    border-radius: 20px;
-}
-.onoffswitch-inner {
-    display: block; 
-    width: 200%; 
-    margin-left: -100%;
-    transition: margin 0.3s ease-in 0s;
-}
-.onoffswitch-inner:before, .onoffswitch-inner:after {
-    display: block; 
-    float: left;
-    width: 50%; 
-    height: 30px; 
-    padding: 0; 
-    line-height: 30px;
-    font-size: 14px; 
-    color: white; 
-    font-family: Trebuche, Arial, sans-serif; 
-    font-weight: bold;
-    box-sizing: border-box;
-}
-.onoffswitch-inner:before {
-    content: "Task";
-    padding-left: 10px;
-    background-color: #023d6b; 
-    color: #FFFFFF;
-}
-.onoffswitch-inner:after {
-    content: "Node";
-    padding-right: 10px;
-    background-color: #b35300; 
-    color: #FFFFFF;
-    text-align: right;
-}
-.onoffswitch-switch {
-    display: block; 
-    width: 18px; 
-    margin: 6px;
-    background: #FFFFFF;
-    position: absolute; 
-    top: 0; 
-    bottom: 0;
-    right: 56px;
-    border: 2px solid #999999; 
-    border-radius: 20px;
-    transition: all 0.3s ease-in 0s; 
-}
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
-    margin-left: 0;
-}
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-    right: 0px; 
-}
-
-input{
-	width: 36%;
-	float:right;
- 	box-shadow: 0 2px 1px 0 rgba(0,0,0,0.2);
-}
-
- select{
-	width:41%;
- 	float:right;
- 	box-shadow: 0 2px 1px 0 rgba(0,0,0,0.2);
- }
 
  #selection form fieldset select {
- 	width: initial;
- }
- 
- img{
- 	float:left;
- 	height:1em;
- 	margin-right: 5px;
+ 	width: 91%;
  }
 
 #generate{
 	width:60%;
 	position: absolute;
 	left:37%;
-    	bottom: 100px;
+   	bottom: 100px;
 }
 
 #reset{
@@ -157,23 +96,42 @@ input{
 
 #command{
 	width:92.5%;
-	border-color: grey;
+	border-color: #023d6b;
 	border-width: 1px;
 	border-style: solid;
 	margin: 0px auto;
+	margin-bottom:0px;
 	display: none;
 	padding:5px;
 	font-family: "Fira Code", "Courier New", monospace;
+	overflow:auto;
+	background:rgba(2, 61, 107, 0.1);
+	word-wrap: break-word;
+}
+
+#zoom{
+	float: right;
+	height:1em;
+	margin-right:5px;
 }
 
 #output{
-	width:70%;
+	width:80%;
 	height:100%;
 	overflow: scroll;
 }
 
 .task{
 	white-space: nowrap;
+	margin-left:10px;
+}
+
+.small {
+  transform: scale(0.8, 0.8);
+  -ms-transform: scale(0.8, 0.8); /* IE 9 */
+  -webkit-transform: scale(0.8, 0.8); /* Safari and Chrome */
+  -o-transform: scale(0.8, 0.8); /* Opera */
+  -moz-transform: scale(0.8, 0.8); /* Firefox */
 }
 
 
@@ -182,14 +140,9 @@ input{
 	display:table;
 	margin-top:20%; 
 	background-color:white;
-	border-radius: 1em;
  	border: 1px solid rgba(0,0,0,0.2);
  	padding:10px;
  	box-shadow: 0 2px 1px 0 rgba(0,0,0,0.2);
-}
-
-h5{
-	color: #023d6b;
 }
 
 table{
@@ -206,25 +159,6 @@ td{
     min-width: 20px;
 }
 
-a{
-	text-decoration:none;
-	color: white;
-	float:left;
-	font-family: Trebuche, Arial, sans-serif; 
-	margin-right: 20px;
-	margin-top: 12px;
-}
-
-a:hover{
-	text-decoration: underline solid white;
-}
-
-footer p{
-	float:left;
-	font-family: Trebuche, Arial, sans-serif; 
-    	font-weight: bolder;
-}
-
 footer{
 	width: calc(100% - 10px);
 	background-color: #023d6b;
@@ -236,5 +170,21 @@ footer{
 	font-size: 100%;
 	position: absolute;
     bottom:0px;
+}
+
+footer a{
+	float:left;
+	margin-right: 20px;
+	margin-top: 12px;
+}
+
+footer a:hover{
+	text-decoration: underline solid white;
+}
+
+footer p{
+	float:left;
+	font-family: Trebuche, Arial, sans-serif; 
+    	font-weight: bolder;
 }
 

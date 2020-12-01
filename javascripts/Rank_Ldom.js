@@ -3,6 +3,14 @@ class Rank_Ldom {
 	constructor(nodes, sockets, cores, threads_per_cores, distribution_node, hint, task){
 		this.nodes = nodes;
 		this.sockets = sockets;
+		if(sockets == 8){
+			this.socket_arr = [3, 1, 7, 5, 2, 0, 6, 4]
+		}else{
+			this.socket_arr = new Array(sockets)
+			for(var i=0; i<sockets; i++){
+				this.socket_arr[i] = i;
+			}
+		}
 		this.cores = cores;
 		this.threads_per_cores = threads_per_cores;
 		this.distribution_node = distribution_node;
@@ -51,7 +59,7 @@ class Rank_Ldom {
 				thread = 0;
 				core = (shift*cpus_per_task+cpu)%this.cores;
 			}
-			socket =(task-start_index)%this.sockets
+			socket = this.socket_arr[(task-start_index)%this.sockets];
 		}else{
 			node = task%this.nodes;
 			var shift = parseInt(task/(this.sockets*this.nodes));
@@ -62,7 +70,7 @@ class Rank_Ldom {
 				thread = 0;
 				core = (shift*cpus_per_task+cpu)%this.cores;
 			}
-			socket =parseInt(task/this.sockets)%this.sockets;
+			socket = this.socket_arr[parseInt(task/this.sockets)%this.sockets];
 		}
 		if(!this.isBinded(node, socket, thread, core)){
 			this.bindCore(node, socket, thread, core);
@@ -82,9 +90,9 @@ class Rank_Ldom {
 			for(var socket=0; socket<this.sockets; socket++){
 				for(var core=0; core<this.cores; core++){
 					for(var thread=0; thread<this.threads_per_cores; thread++){
-						if(!this.isBinded(node, socket, thread, core)){
-							this.bindCore(node, socket, thread, core);
-							return [node, socket, thread, core];
+						if(!this.isBinded(node, this.socket_arr[socket], thread, core)){
+							this.bindCore(node, this.socket_arr[socket], thread, core);
+							return [node, this.socket_arr[socket], thread, core];
 						}
 					}
 				}
@@ -93,9 +101,9 @@ class Rank_Ldom {
 		}else{
 			for(var socket=0; socket<this.sockets; socket++){
 				for(var core=0; core<this.cores; core++){
-					if(!this.isBinded(node, socket, 0, core)){
-						this.bindCore(node, socket, 0, core);
-						return [node, socket, 0, core];
+					if(!this.isBinded(node, this.socket_arr[socket], 0, core)){
+						this.bindCore(node, this.socket_arr[socket], 0, core);
+						return [node, this.socket_arr[socket], 0, core];
 					}
 				}
 				

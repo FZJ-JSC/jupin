@@ -4,6 +4,14 @@ class Cores {
 		this.name = 'Cores';
 		this.nodes = nodes;
 		this.sockets = sockets;
+		if(sockets == 8){
+			this.socket_arr = [3, 1, 7, 5, 2, 0, 6, 4]
+		}else{
+			this.socket_arr = new Array(sockets)
+			for(var i=0; i<sockets; i++){
+				this.socket_arr[i] = i;
+			}
+		}
 		this.cores = cores;
 		this.threads_per_cores = threads_per_cores;
 		this.distribution_node = distribution_node;
@@ -42,7 +50,7 @@ class Cores {
 	getCoreToBind(task, cpu_per_task, cpu){
 		var node, socket, thread, core, start_index = 0, task_number;
 		// Distributon-Node
-		if(this.mode || this.distribution_node == 'block'){
+		if(this.mode == 'Task' || this.distribution_node == 'block'){
 			node = this.node_allocation[task]
 			for(var key_node in this.node_allocation){
 				if(this.node_allocation[key_node] == node) break; else start_index++;
@@ -61,29 +69,29 @@ class Cores {
 					case('block'):
 						thread =(cpu+(task_number*cpu_per_task))%this.threads_per_cores;
 						core = parseInt((cpu+(task_number*cpu_per_task))/this.threads_per_cores)%this.cores;
-						socket = parseInt((task_number*cpu_per_task+cpu)/
-							(this.threads_per_cores*this.cores))%this.sockets;
+						socket = this.socket_arr[parseInt((task_number*cpu_per_task+cpu)/
+							(this.threads_per_cores*this.cores))%this.sockets];
 						break;
 					case('cyclic'):
 						thread = cpu%this.threads_per_cores; 
 						core = (task_number*parseInt(cpu_per_task/this.threads_per_cores+0.5)
 								+parseInt(cpu/this.threads_per_cores))%this.cores 
-						socket = parseInt((task_number*(cpu_per_task+cpu_per_task%
-							this.threads_per_cores)+cpu)/(this.cores*this.threads_per_cores))%this.sockets;
+						socket = this.socket_arr[parseInt((task_number*(cpu_per_task+cpu_per_task%
+							this.threads_per_cores)+cpu)/(this.cores*this.threads_per_cores))%this.sockets];
 						break;
 					case('fcyclic'):
 						if(this.cores%cpu_per_task==0 || cpu_per_task%this.cores==0){
 							core = (task_number*cpu_per_task+cpu)%this.cores; 
 							thread = parseInt((task_number*cpu_per_task+cpu)/
 										(this.cores*this.sockets))%this.threads_per_cores
-							socket = parseInt((task_number*cpu_per_task+cpu)/
-										this.cores)%this.sockets
+							socket = this.socket_arr[parseInt((task_number*cpu_per_task+cpu)/
+										this.cores)%this.sockets];
 						}else{
 							core = (task_number*cpu_per_task+cpu)%this.cores; 
 							thread = parseInt((task_number*cpu_per_task+cpu)/
 										this.cores)%this.threads_per_cores;
-							socket = parseInt((task_number*cpu_per_task+cpu)/
-										(this.cores*this.sockets))%this.sockets;
+							socket = this.socket_arr[parseInt((task_number*cpu_per_task+cpu)/
+										(this.cores*this.sockets))%this.sockets];
 						}
 						break;
 				}
@@ -95,7 +103,8 @@ class Cores {
 			
 		// Distribution Socket Cyclic
 		}else if(this.distribution_socket == 'cyclic'){
-			socket = task_number%this.sockets;
+			socket = this.socket_arr[task_number%this.sockets] + 
+					parseInt(((parseInt(task_number/this.sockets)*cpu_per_task)+cpu)/(this.cores*this.threads_per_cores))%this.sockets;
 			if(this.hint=='-'){
 				switch(this.distribution_core){
 					case('block'):
@@ -114,12 +123,20 @@ class Cores {
 				}
 			}else{
 				core = (parseInt(task_number/this.sockets)*cpu_per_task+cpu)%this.cores;
+				socket = socket + parseInt(((parseInt(task_number/this.sockets)*cpu_per_task)+cpu)/(this.cores))%this.sockets;
 				thread = 0;
+				if(!this.isBinded(node, socket, thread, core)){
+					this.bindCore(node, socket, thread, core);
+					return [node, socket, thread, core];
+				}else{
+					console.log('help')
+					return this.getNextUnbindedCore(task, cpu_per_task, cpu);
+				}
 			}
 		// Distribution Socket Fcyclic
 		}else if(this.distribution_socket == 'fcyclic'){
 			if(this.hint=='-'){
-				socket = (cpu+task_number)%this.sockets;
+				socket = this.socket_arr[(cpu+task_number)%this.sockets];
 				switch(this.distribution_core){
 					case('block'):
 						core = parseInt(((task_number*cpu_per_task)+cpu)/(this.threads_per_cores*this.sockets)) 
@@ -134,11 +151,43 @@ class Cores {
 			}else{
 				core = parseInt(((task_number*cpu_per_task)+cpu)/(this.sockets))%this.cores;
 				thread = 0;
-				socket = (cpu+task_number)%this.sockets;
+				socket = this.socket_arr[(cpu+task_number)%this.sockets];
 			}
 		}
-		
+		this.bindCore(node, socket, thread, core);
 		return [node, socket, thread, core];
+		
+	}
+	
+	getNextUnbindedCore(task, cpus_per_task, cpu){
+		if(this.distribution_node == 'block'){
+			var node = this.node_allocation[task];
+		}else{
+			var node = task%this.nodes;
+		}
+		for(var socket=0; socket<this.sockets; socket++){
+			for(var core=0; core<this.cores; core++){
+				if(!this.isBinded(node, this.socket_arr[socket], 0, core)){
+					this.bindCore(node, this.socket_arr[socket], 0, core);
+					return [node, this.socket_arr[socket], 0, core];
+				}
+			}
+			
+		}
+		
+		return null;
+	}
+	
+	bindCore(node, socket, thread, core){
+		this.binded[node][socket][thread][core] = 'y';
+	}
+	
+	isBinded(node, socket, thread, core){
+		if(this.binded[node][socket][thread][core] == 'y'){
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 }

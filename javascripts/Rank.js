@@ -3,6 +3,14 @@ class Rank {
 	constructor(nodes, sockets, cores, threads_per_cores, distribution_node, hint, task){
 		this.nodes = nodes;
 		this.sockets = sockets;
+		if(sockets == 8){
+			this.socket_arr = [3, 1, 7, 5, 2, 0, 6, 4]
+		}else{
+			this.socket_arr = new Array(sockets)
+			for(var i=0; i<sockets; i++){
+				this.socket_arr[i] = i;
+			}
+		}
 		this.cores = cores;
 		this.threads_per_cores = threads_per_cores;
 		this.distribution_node = distribution_node;
@@ -29,7 +37,7 @@ class Rank {
 				if(this.node_allocation[key_node] == node) break; else start_index++;
 			}
 			var core = ((task-start_index)*cpus_per_task+cpu)%this.cores;
-			var socket = parseInt(((task-start_index)*cpus_per_task+cpu)/this.cores)%this.sockets;
+			var socket = this.socket_arr[parseInt(((task-start_index)*cpus_per_task+cpu)/this.cores)%this.sockets];
 			if(this.hint=='-'){
 				var thread = parseInt(((task-start_index)*cpus_per_task+cpu)/
 								(this.cores*this.sockets))%this.threads_per_cores;
@@ -39,7 +47,7 @@ class Rank {
 		}else{
 			var node = task%this.nodes;
 			var core = (parseInt(task/this.nodes)*cpus_per_task+cpu)%this.cores;
-			var socket = parseInt((parseInt(task/this.nodes)*cpus_per_task+cpu)/this.cores)%this.sockets;
+			var socket = this.socket_arr[parseInt((parseInt(task/this.nodes)*cpus_per_task+cpu)/this.cores)%this.sockets];
 			if(this.hint=='-'){
 				var thread = parseInt((parseInt(task/this.nodes)*cpus_per_task+cpu)/
 								(this.cores*this.sockets))%this.threads_per_cores;
