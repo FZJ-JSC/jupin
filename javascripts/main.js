@@ -40,6 +40,15 @@ window.onload = function () {
 }
 
 /**
+ * Onclick-Event to close alert
+ */
+function closeAlert(elem){
+    var div = elem.parentElement;
+    div.style.opacity = "0";
+    setTimeout(function(){ div.style.display = "none"; }, 600);
+}   
+
+/**
  * Onclick-Event to zoom in/out
  */
 function zoom(){

@@ -1,21 +1,27 @@
-body{
+* {
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+body {
 	background-color: #ebebeb;
 	font-family: "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
 	margin: 0px;
-	height:100vh;
+	height: 100vh;
 	overflow: hidden;
 }
 
-a{
-	text-decoration:none;
+a {
+	text-decoration: none;
 	color: white;
-	font-family: Trebuche, Arial, sans-serif; 
+	font-family: Trebuche, Arial, sans-serif;
 }
 
-header{
-	font-family: Trebuche, Arial, sans-serif; 
-    font-weight: bolder;
-	width: calc(100% - 10px);
+header {
+	font-family: Trebuche, Arial, sans-serif;
+	font-weight: bolder;
+	width: 100%;
 	background-color: #023d6b;
 	height: 50px;
 	color: white;
@@ -23,168 +29,200 @@ header{
 	padding-left: 10px;
 	font-size: 100%;
 	position: absolute;
-    top: 0;
+	top: 0;
 }
 
-main{
+main {
 	margin: 0px auto;
-	margin-top:50px;
+	margin-top: 50px;
 	width: 95%;
-	height:calc(100vh - 100px);
-	font-family: Trebuche, Arial, sans-serif; 
+	height: calc(100vh - 100px);
+	font-family: Trebuche, Arial, sans-serif;
 }
 
-h5{
+h5 {
 	color: #023d6b;
 }
 
-form{
-	margin:20px;
+form {
+	margin: 20px;
 }
 
-input{
+input {
 	width: 36%;
 	float: right;
- 	box-shadow: 0 1px 1px 0 rgba(0,0,0,0.2);
+	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2);
 }
 
-select{
-	width:39%;
- 	float:right;
- 	background-color: white;
-}
-
-.two-column{
-	float:left;
-}
-
-#selection{
-	width:20%;
-	height:100%;
-	position:relative;
+select {
+	width: 39%;
+	float: right;
 	background-color: white;
-	overflow:scroll;
 }
+
+.two-column {
+	float: left;
+}
+
+#selection {
+	width: 20%;
+	height: 100%;
+	position: relative;
+	background-color: white;
+	overflow: scroll;
+}
+
 #selection form fieldset {
-	display:inline-block;
-	width:42%;
-	margin-left:53%;
+	display: inline-block;
+	width: 42%;
+	margin-left: 53%;
 	border: 1px solid #EEE;
 }
 
-.fa-info-circle{
+.fa-info-circle {
 	color: rgba(2, 61, 107, 0.3);
-	align-items:center;
+	align-items: center;
 }
 
- #selection form fieldset select {
- 	width: 91%;
- }
+#selection form fieldset select {
+	width: 91%;
+}
 
-#generate{
-	width:60%;
+#generate {
+	width: 60%;
 	position: absolute;
-	left:37%;
-   	bottom: 100px;
+	left: 37%;
+	bottom: 100px;
 }
 
-#reset{
-	width:30%;
+#reset {
+	width: 30%;
 	position: absolute;
-    	bottom: 100px;
+	bottom: 100px;
 }
 
-#command{
-	width:92.5%;
+#command {
+	width: 92.5%;
 	border-color: #023d6b;
 	border-width: 1px;
 	border-style: solid;
 	margin: 0px auto;
-	margin-bottom:0px;
+	margin-bottom: 0px;
 	display: none;
-	padding:5px;
+	padding: 5px;
 	font-family: "Fira Code", "Courier New", monospace;
-	overflow:auto;
-	background:rgba(2, 61, 107, 0.1);
+	overflow: auto;
+	background: rgba(2, 61, 107, 0.1);
 	word-wrap: break-word;
 }
 
-#zoom{
+#zoom {
 	float: right;
-	height:1em;
-	margin-right:5px;
+	height: 1em;
+	margin-right: 5px;
 }
 
-#output{
-	width:80%;
-	height:100%;
+#output {
+	width: 80%;
+	height: 100%;
 	overflow: scroll;
 }
 
-.task{
+.task {
 	white-space: nowrap;
-	margin-left:10px;
+	margin-left: 10px;
 }
 
 .small {
-  transform: scale(0.8, 0.8);
-  -ms-transform: scale(0.8, 0.8); /* IE 9 */
-  -webkit-transform: scale(0.8, 0.8); /* Safari and Chrome */
-  -o-transform: scale(0.8, 0.8); /* Opera */
-  -moz-transform: scale(0.8, 0.8); /* Firefox */
+	transform: scale(0.8, 0.8);
+	-ms-transform: scale(0.8, 0.8); /* IE 9 */
+	-webkit-transform: scale(0.8, 0.8); /* Safari and Chrome */
+	-o-transform: scale(0.8, 0.8); /* Opera */
+	-moz-transform: scale(0.8, 0.8); /* Firefox */
 }
 
-
-#warning{
-	margin:0px auto; 
-	display:table;
-	margin-top:20%; 
-	background-color:white;
- 	border: 1px solid rgba(0,0,0,0.2);
- 	padding:10px;
- 	box-shadow: 0 2px 1px 0 rgba(0,0,0,0.2);
+#warning {
+	margin: 0px auto;
+	display: table;
+	margin-top: 20%;
+	background-color: white;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	padding: 10px;
+	box-shadow: 0 2px 1px 0 rgba(0, 0, 0, 0.2);
 }
 
-table{
+table {
 	color: #023d6b;
 	text-align: center;
-	display:inline-block;
+	display: inline-block;
+	border-spacing: 1px;
 }
+
 main #output table {
 	font-family: "Fira Code", "Courier New", monospace;
 }
 
-td{
-	width:20px;
-    min-width: 20px;
+td {
+	width: 20px;
+	min-width: 20px;
 }
 
-footer{
-	width: calc(100% - 10px);
+footer {
+	width: 100%;
 	background-color: #023d6b;
 	height: 40px;
 	color: white;
 	margin-bottom: 0px;
-	padding:0px;
+	padding: 0px;
 	padding-left: 10px;
 	font-size: 100%;
 	position: absolute;
-    bottom:0px;
+	bottom: 0px;
 }
 
-footer a{
-	float:left;
+footer a {
+	float: left;
 	margin-right: 20px;
 	margin-top: 12px;
 }
 
-footer a:hover{
+footer a:hover {
 	text-decoration: underline solid white;
 }
 
-footer p{
-	float:left;
-	font-family: Trebuche, Arial, sans-serif; 
-    	font-weight: bolder;
+footer p {
+	float: left;
+	font-family: Trebuche, Arial, sans-serif;
+	font-weight: bolder;
 }
 
+/*** Alert banner with button ***/
+.alert {
+	padding: 10px 20px;
+	background-color: #f44336;
+	color: white;
+	opacity: 1;
+	transition: opacity 0.6s;
+	margin-bottom: 15px;
+	position: fixed;
+	top: 0;
+	z-index: 2000;
+	width: 100vw;
+	border-radius: 0rem 0rem 0.3rem 0.3rem;
+}
+
+.closebtn {
+	margin-left: 15px;
+	color: white;
+	font-weight: bold;
+	float: right;
+	font-size: 22px;
+	line-height: 20px;
+	cursor: pointer;
+	transition: 0.3s;
+}
+
+.closebtn:hover {
+	color: black;
+}
+/*** End of Alert banner ***/
