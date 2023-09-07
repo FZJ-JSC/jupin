@@ -46,7 +46,7 @@ function closeAlert(elem){
     var div = elem.parentElement;
     div.style.opacity = "0";
     setTimeout(function(){ div.style.display = "none"; }, 600);
-}   
+} 
 
 /**
  * Onclick-Event to zoom in/out
@@ -80,11 +80,11 @@ function switchMode(mode){
 	//switch mode to task and disable mask and nodes
 	if(mode == 'task'){
 		document.getElementById("hex2bin").disabled = true;
-		document.getElementById("nodes").value = 1;
+				document.getElementById("nodes").value = 1;
 		document.getElementById("nodes").disabled = true;
 		document.getElementById("task").disabled = false;
 		document.getElementById("cpu_per_task").disabled = false;
-		document.getElementById("cpu_bind").disabled = false;
+				document.getElementById("cpu_bind").disabled = false;
 		document.getElementById("hint").disabled = false;
 		document.getElementById("distribution_node").disabled = false;
 		document.getElementById("distribution_socket").disabled = false;
@@ -92,10 +92,10 @@ function switchMode(mode){
 	//switch mode to node and disable mask
 	}else if(mode == 'node'){
 		document.getElementById("hex2bin").disabled = true;
-		document.getElementById("nodes").disabled = false;
+				document.getElementById("nodes").disabled = false;
 		document.getElementById("task").disabled = false;
 		document.getElementById("cpu_per_task").disabled = false;
-		document.getElementById("cpu_bind").disabled = false;
+				document.getElementById("cpu_bind").disabled = false;
 		document.getElementById("hint").disabled = false;
 		document.getElementById("distribution_node").disabled = false;
 		document.getElementById("distribution_socket").disabled = false;
@@ -116,7 +116,7 @@ function switchMode(mode){
 		document.getElementById("distribution_core").disabled = true;
 		hex2Bin(document.getElementById("hex2bin").value);
 	}
-}
+	}
 
 /**
  * Onchange-Event to switch between different CPU-Bind options.
@@ -124,7 +124,7 @@ function switchMode(mode){
  */	
 function switchCPUBind(cpu_bind){
 	//disable distribution if cpu-bind is not threads or cores
-	document.getElementById('distribution_socket').disabled = (cpu_bind == 'threads' || cpu_bind == 'cores') ? false : true;
+	//document.getElementById('distribution_socket').disabled = (cpu_bind == 'threads' || cpu_bind == 'cores') ? false : true;
 	document.getElementById('distribution_core').disabled = (cpu_bind == 'threads' || cpu_bind == 'cores') ? false : true;
 }
 
@@ -189,9 +189,9 @@ function createCommand(nodes, task, cpu_per_task, sockets, cores, threads_per_co
 	var command = document.getElementById('command');
 	command.innerHTML = "";
 	var p = document.createElement('code');
-	p.innerHTML = '-N ' + nodes + ' -n ' + task + ' -c ' + cpu_per_task + ' --cpu-bind=' + cpu_bind + 
-				 ' --distribution=' + distribution_node + ':' + distribution_socket + ':' + distribution_core;
-	if(hint != '-') p.innerHTML +=  ' --hint=' + hint;
+			p.innerHTML = '-N ' + nodes + ' -n ' + task + ' -c ' + cpu_per_task + ' --cpu-bind=' + cpu_bind + 
+				 	' --distribution=' + distribution_node + ':' + distribution_socket + ':' + distribution_core;
+		if(hint != '-') p.innerHTML +=  ' --hint=' + hint;
 	
 	p.style.textAlign = "center";
 	command.appendChild(p);
@@ -228,7 +228,7 @@ function generateForm() {
 	setURL();
 	
 	//Validator
-	var validator = new Validator(sockets, cores, threads_per_cores, task, cpu_per_task, nodes, mode, distribution_node, distribution_socket, distribution_core. hint);
+	var validator = new Validator(sockets, cores, threads_per_cores, task, cpu_per_task, nodes, cpu_bind, mode, distribution_node, distribution_socket, distribution_core, hint);
 	if(!validator.isValidOptions()){
 		if(mode == 'task') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high</div>';
 		if(mode == 'node') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of nodes too low</div>';
@@ -242,10 +242,10 @@ function generateForm() {
 	createCommand(nodes, task, cpu_per_task, sockets, cores, threads_per_cores, cpu_bind, distribution_node, distribution_socket, distribution_core, hint);
 	switch(cpu_bind){
 		case 'rank':
-			var CPU_Bind = new Rank(nodes, sockets, cores, threads_per_cores, distribution_node, hint, task);
+			var CPU_Bind = new Rank(nodes, sockets, cores, threads_per_cores, distribution_node, distribution_socket, hint, task, cpu_per_task);
 			break;
 		case 'rank_ldom':
-			var CPU_Bind = new Rank_Ldom(nodes, sockets, cores, threads_per_cores, distribution_node, hint, task);
+			var CPU_Bind = new Rank_Ldom(nodes, sockets, cores, threads_per_cores, distribution_node, distribution_socket, hint, task);
 			break;
 		case 'threads':
 			var CPU_Bind = new Threads(nodes, sockets, cores, threads_per_cores,
@@ -409,7 +409,7 @@ function createContent(tasks, mode){
 		}
 	}
 	if(tasks[0].length == 8){
-		var ids = [1, 0, 3, 7];
+		var ids = [1, 0, 3, 2];
 		for(var i=0; i<4; i++){
 			const gpuheadline = document.createElementNS("http://www.w3.org/2000/svg", "text");
 		    gpuheadline.setAttribute("x", 35 + (i*2+1)*(tasks[0][0][0].length+1)*22);
