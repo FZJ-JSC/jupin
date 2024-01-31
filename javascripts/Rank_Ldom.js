@@ -1,7 +1,7 @@
-//Abbruchbedingung passt nicht ganz
 class Rank_Ldom {
-	constructor(nodes, sockets, cores, threads_per_cores, distribution_node, hint, task){
+	constructor(nodes, sockets, cores, threads_per_cores, distribution_node, distribution_socket, hint, task){
 		this.nodes = nodes;
+		this.tasks = task;
 		this.sockets = sockets;
 		if(sockets == 8){
 			this.socket_arr = [3, 1, 7, 5, 2, 0, 6, 4]
@@ -14,7 +14,9 @@ class Rank_Ldom {
 		this.cores = cores;
 		this.threads_per_cores = threads_per_cores;
 		this.distribution_node = distribution_node;
-		this.hint = hint;
+		this.distribution_socket = distribution_socket;
+		this.threads = (hint == '-') ? threads_per_cores : 1
+
 		this.binded = new Array(nodes);
 		for(var node=0; node<nodes; node++){
 			this.binded[node] = new Array(sockets);
@@ -29,10 +31,11 @@ class Rank_Ldom {
 				this.binded[node][socket] = array_for_task;
 			}
 		}
+
 		this.node_allocation = {}; //task->node
 		var task_number = 0;
 		for(var node=0; node<this.nodes; node++){
-			for(var k=0; k < parseInt(task/this.nodes); k++){
+			for(var k=0; k < Math.floor(task/this.nodes); k++){
 				this.node_allocation[task_number] = node;
 				task_number++;
 			}
@@ -44,34 +47,53 @@ class Rank_Ldom {
 	}
 	
 	getCoreToBind(task, cpus_per_task, cpu){
-		var node, thread, core, socket;
+		var node, socket, core, thread, number_of_cores, cores_per_socket, start_index = 0, task_number, current, tasks_in_node;
+		
+		//Distribution-Node
 		if(this.distribution_node == 'block'){
-			var node = this.node_allocation[task]
-			var start_index = 0;
+			node = this.node_allocation[task];
 			for(var key_node in this.node_allocation){
 				if(this.node_allocation[key_node] == node) break; else start_index++;
 			}
-			var shift = parseInt((task-start_index)/this.sockets);
-			if(this.hint=='-'){
-				thread = (shift*cpus_per_task+cpu)%this.threads_per_cores;
-				core = parseInt((shift*cpus_per_task+cpu)/this.threads_per_cores)%this.cores;
-			}else{
-				thread = 0;
-				core = (shift*cpus_per_task+cpu)%this.cores;
-			}
-			socket = this.socket_arr[(task-start_index)%this.sockets];
+			task_number = task - start_index;
 		}else{
 			node = task%this.nodes;
-			var shift = parseInt(task/(this.sockets*this.nodes));
-			if(this.hint=='-'){
-				thread = (shift*cpus_per_task+cpu)%this.threads_per_cores;
-				core = parseInt((shift*cpus_per_task+cpu)/this.threads_per_cores)%this.cores;
-			}else{
-				thread = 0;
-				core = (shift*cpus_per_task+cpu)%this.cores;
-			}
-			socket = this.socket_arr[parseInt(task/this.sockets)%this.sockets];
+			task_number = Math.floor(task/this.nodes);
 		}
+
+		current = task_number*cpus_per_task+cpu;
+		tasks_in_node = Math.floor(this.tasks/this.nodes);
+		tasks_in_node += (node < this.tasks%this.nodes) ? 1 : 0
+
+		//Distribution-Socket
+		core = Math.floor((Math.floor(task_number / this.sockets) * cpus_per_task + cpu) / this.threads);
+		thread = (Math.floor(task_number / this.sockets) * cpus_per_task + cpu) % this.threads;
+		//Block 
+		if(this.distribution_socket == 'block'){
+			var number_of_sockets = Math.ceil(tasks_in_node * cpus_per_task/(this.cores * this.threads))
+			socket = task_number % number_of_sockets;
+			cores_per_socket = Math.ceil(Math.ceil(tasks_in_node * cpus_per_task / this.threads) % this.cores);
+			if (cores_per_socket == 0) cores_per_socket = this.cores;
+			if (core >= cores_per_socket) return this.getNextUnbindedCore(task, cpus_per_task, cpu);
+		//Cyclic 
+		}else if(this.distribution_socket == 'cyclic'){
+			socket = task_number % this.sockets;
+			if (core >= this.cores) core = this.cores - 1; 
+			thread = (Math.floor(task_number / this.sockets) * cpus_per_task + cpu) % this.threads;
+		//Fcyclic
+		}else if(this.distribution_socket == 'fcyclic'){
+			socket = task_number % this.sockets;
+			cores_per_socket = Math.ceil(Math.ceil(tasks_in_node * cpus_per_task / this.threads) / this.sockets);
+			while (core >= cores_per_socket) {
+				socket  = socket + 1;
+				var diff = (core - cores_per_socket) * this.threads + thread;
+				core = Math.floor((Math.floor(task_number / this.sockets) * cpus_per_task + diff) / this.threads);
+				thread = (Math.floor(task_number / this.sockets) * cpus_per_task + diff) % this.threads;
+			}
+		}
+
+		socket = this.socket_arr[socket];
+
 		if(!this.isBinded(node, socket, thread, core)){
 			this.bindCore(node, socket, thread, core);
 			return [node, socket, thread, core];
@@ -86,28 +108,17 @@ class Rank_Ldom {
 		}else{
 			var node = task%this.nodes;
 		}
-		if(this.hint=='-'){
-			for(var socket=0; socket<this.sockets; socket++){
-				for(var core=0; core<this.cores; core++){
-					for(var thread=0; thread<this.threads_per_cores; thread++){
-						if(!this.isBinded(node, this.socket_arr[socket], thread, core)){
-							this.bindCore(node, this.socket_arr[socket], thread, core);
-							return [node, this.socket_arr[socket], thread, core];
-						}
+		
+		for(var socket=0; socket<this.sockets; socket++){
+			for(var core=0; core<this.cores; core++){
+				for(var thread=0; thread<this.threads; thread++){
+					if(!this.isBinded(node, this.socket_arr[socket], thread, core)){
+						this.bindCore(node, this.socket_arr[socket], thread, core);
+						return [node, this.socket_arr[socket], thread, core];
 					}
 				}
-				
 			}
-		}else{
-			for(var socket=0; socket<this.sockets; socket++){
-				for(var core=0; core<this.cores; core++){
-					if(!this.isBinded(node, this.socket_arr[socket], 0, core)){
-						this.bindCore(node, this.socket_arr[socket], 0, core);
-						return [node, this.socket_arr[socket], 0, core];
-					}
-				}
-				
-			}
+			
 		}
 		
 		return null;
@@ -118,10 +129,6 @@ class Rank_Ldom {
 	}
 	
 	isBinded(node, socket, thread, core){
-		if(this.binded[node][socket][thread][core] == 'y'){
-			return true;
-		}else{
-			return false;
-		}
+		return this.binded[node][socket][thread][core] == 'y';
 	}
 }

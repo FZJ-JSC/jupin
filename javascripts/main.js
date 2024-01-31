@@ -89,6 +89,7 @@ function switchMode(mode){
 		document.getElementById("distribution_node").disabled = false;
 		document.getElementById("distribution_socket").disabled = false;
 		document.getElementById("distribution_core").disabled = false;
+		switchCPUBind(document.getElementById("cpu_bind").value);
 	//switch mode to node and disable mask
 	}else if(mode == 'node'){
 		document.getElementById("hex2bin").disabled = true;
@@ -100,6 +101,7 @@ function switchMode(mode){
 		document.getElementById("distribution_node").disabled = false;
 		document.getElementById("distribution_socket").disabled = false;
 		document.getElementById("distribution_core").disabled = false;
+		switchCPUBind(document.getElementById("cpu_bind").value);
 	//switch mode to hex2bin and disable all
 	}else{
 		document.getElementById('command').innerHTML = "";
@@ -228,7 +230,7 @@ function generateForm() {
 	setURL();
 	
 	//Validator
-	var validator = new Validator(sockets, cores, threads_per_cores, task, cpu_per_task, nodes, cpu_bind, mode, distribution_node, distribution_socket, distribution_core, hint);
+	var validator = new Validator(sockets, cores, threads_per_cores, task, cpu_per_task, nodes, cpu_bind, distribution_socket, distribution_core, hint);
 	if(!validator.isValidOptions()){
 		if(mode == 'task') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high</div>';
 		if(mode == 'node') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of nodes too low</div>';
