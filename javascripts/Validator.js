@@ -1,13 +1,12 @@
 class Validator {
-	constructor(sockets, cores, threads_per_cores, task, cpu_per_task, nodes, cpu_bind, distribution_socket, distribution_core, hint){
+	constructor(sockets, cores, task, cpu_per_task, nodes, cpu_bind, distribution_socket, distribution_core, threads_per_core){
 		this.task = task;
 		this.cpu_per_task = cpu_per_task;
 		this.distribution_socket = distribution_socket;
 		this.distribution_core = distribution_core;
 		this.cpu_bind = cpu_bind;
 		this.cpu_per_task = cpu_per_task;
-		this.available_cores = sockets*cores*nodes;
-		if(hint == "-") this.available_cores *= threads_per_cores;
+		this.available_cores = sockets*cores*nodes * threads_per_core;
 	}
 	
 	isValidOptions(){

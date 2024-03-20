@@ -27,7 +27,7 @@
 					<form>
 					  <span title='Choose a supercomputer partition on which you want to simulate the pinning.'><i class='fa fa-info-circle'></i></span>
 					  <label for="supercomputer">System:</label>
-					  <select id="supercomputer" onchange="generateForm()">
+					  <select id="supercomputer" onchange="switchSystem(this.value), generateForm();">
 					      <option selected value="juwels">JUWELS</option>
 					      <option value="juwels-gpu">JUWELS-GPU</option>
 					      <option value="juwels-booster">JUWELS-BOOSTER</option>
@@ -65,13 +65,13 @@
 					  
 					  <span title='Select the numbers of tasks per job.'><i class='fa fa-info-circle'></i></span>
 					  <label for="task">Task:</label>
-					  <input value="1" type="number" min="0" id="task" onchange="generateForm()">
+					  <input value="1" type="number" min="1" id="task" onchange="generateForm()">
 					
 					  <br><br><br>
 					  
 					  <span title='Select the numbers of requested CPUs per task.'><i class='fa fa-info-circle'></i></span>
 					  <label for="cpu_per_task">CPU's per task:</label>
-					  <input value="1" type="number" min="0" id="cpu_per_task" onchange="generateForm()">
+					  <input value="1" type="number" min="1" id="cpu_per_task" onchange="generateForm()">
 					  
 					  <br><br><br>
 					  
@@ -86,12 +86,9 @@
 					  
 					  <br><br><br>
 					  
-					  <span title="If the hint 'nomultithread' is given, the affinity will be set as if there were only one thread per core on the nodes and an error message will be thrown if the total amount of the threads you are trying to use per node is higher than the available amount of physical hardware threads."><i class='fa fa-info-circle'></i></span>
-					  <label for="hint">Hint:</label>
-					  <select id="hint" onchange="generateForm()">
-					      <option selected>-</option>
-					      <option>nomultithread</option>
-					  </select>
+					  <span title="Select the number of threads per core."><i class='fa fa-info-circle'></i></span>
+					  <label for="threads-per-core">Threads per Core:</label>
+					  <input value="1" type="number" min="1" max="2" id="threads-per-core" onchange="generateForm()">
 					  
 					  
 					  <br><br><br>

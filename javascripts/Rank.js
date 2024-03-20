@@ -1,5 +1,5 @@
 class Rank {
-	constructor(nodes, sockets, cores, threads_per_cores, distribution_node, distribution_socket, hint, task){
+	constructor(nodes, sockets, cores, threads, distribution_node, distribution_socket, threads_per_core, task){
 		this.nodes = nodes;
 		this.tasks = task;
 		this.sockets = sockets;
@@ -12,10 +12,10 @@ class Rank {
 			}
 		}
 		this.cores = cores;
-		this.threads_per_cores = threads_per_cores;
+		this.threads = threads;
 		this.distribution_node = distribution_node;
 		this.distribution_socket = distribution_socket;
-		this.threads = (hint == '-') ? threads_per_cores : 1
+		this.threads_per_core = threads_per_core
 		this.node_allocation = {}; //task->node
 		var task_number = 0;
 		for(var node=0; node<this.nodes; node++){
@@ -50,7 +50,7 @@ class Rank {
 		tasks_in_node += (node < this.tasks%this.nodes) ? 1 : 0
 
 		//Distribution-Socket
-		number_of_cores = Math.ceil(tasks_in_node * cpus_per_task / this.threads);
+		number_of_cores = Math.ceil(tasks_in_node * cpus_per_task / this.threads_per_core);
 		thread = Math.floor(current/number_of_cores);
 		//Block 
 		if(this.distribution_socket == 'block'){
@@ -58,7 +58,7 @@ class Rank {
 			core = (current - thread * number_of_cores) % this.cores; 
 		//Cyclic 
 		}else if(this.distribution_socket == 'cyclic'){
-			cores_per_socket = Math.ceil(Math.ceil(tasks_in_node / this.sockets) * cpus_per_task / this.threads); 
+			cores_per_socket = Math.ceil(Math.ceil(tasks_in_node / this.sockets) * cpus_per_task / this.threads_per_core); 
 			cores_per_socket = Math.min(cores_per_socket, this.cores)
 			socket = Math.floor((current - thread * number_of_cores) / cores_per_socket); 
 			core = (current - thread * number_of_cores) % cores_per_socket; 

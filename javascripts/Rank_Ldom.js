@@ -1,5 +1,5 @@
 class Rank_Ldom {
-	constructor(nodes, sockets, cores, threads_per_cores, distribution_node, distribution_socket, hint, task){
+	constructor(nodes, sockets, cores, threads, distribution_node, distribution_socket, threads_per_core, task){
 		this.nodes = nodes;
 		this.tasks = task;
 		this.sockets = sockets;
@@ -12,17 +12,17 @@ class Rank_Ldom {
 			}
 		}
 		this.cores = cores;
-		this.threads_per_cores = threads_per_cores;
+		this.threads = threads;
 		this.distribution_node = distribution_node;
 		this.distribution_socket = distribution_socket;
-		this.threads = (hint == '-') ? threads_per_cores : 1
+		this.threads_per_core = threads_per_core
 
 		this.binded = new Array(nodes);
 		for(var node=0; node<nodes; node++){
 			this.binded[node] = new Array(sockets);
 			for(var socket=0; socket<sockets; socket++){
-				var array_for_task = new Array(threads_per_cores);
-				for(var thread=0; thread<threads_per_cores; thread++){
+				var array_for_task = new Array(threads);
+				for(var thread=0; thread<threads; thread++){
 					array_for_task[thread] = new Array(cores);
 					for(var core=0; core<cores; core++){
 						array_for_task[thread][core] = 'n';
@@ -66,29 +66,29 @@ class Rank_Ldom {
 		tasks_in_node += (node < this.tasks%this.nodes) ? 1 : 0
 
 		//Distribution-Socket
-		core = Math.floor((Math.floor(task_number / this.sockets) * cpus_per_task + cpu) / this.threads);
-		thread = (Math.floor(task_number / this.sockets) * cpus_per_task + cpu) % this.threads;
+		core = Math.floor((Math.floor(task_number / this.sockets) * cpus_per_task + cpu) / this.threads_per_core);
+		thread = (Math.floor(task_number / this.sockets) * cpus_per_task + cpu) % this.threads_per_core;
 		//Block 
 		if(this.distribution_socket == 'block'){
-			var number_of_sockets = Math.ceil(tasks_in_node * cpus_per_task/(this.cores * this.threads))
+			var number_of_sockets = Math.ceil(tasks_in_node * cpus_per_task/(this.cores * this.threads_per_core))
 			socket = task_number % number_of_sockets;
-			cores_per_socket = Math.ceil(Math.ceil(tasks_in_node * cpus_per_task / this.threads) % this.cores);
+			cores_per_socket = Math.ceil(Math.ceil(tasks_in_node * cpus_per_task / this.threads_per_core) % this.cores);
 			if (cores_per_socket == 0) cores_per_socket = this.cores;
 			if (core >= cores_per_socket) return this.getNextUnbindedCore(task, cpus_per_task, cpu);
 		//Cyclic 
 		}else if(this.distribution_socket == 'cyclic'){
 			socket = task_number % this.sockets;
 			if (core >= this.cores) core = this.cores - 1; 
-			thread = (Math.floor(task_number / this.sockets) * cpus_per_task + cpu) % this.threads;
+			thread = (Math.floor(task_number / this.sockets) * cpus_per_task + cpu) % this.threads_per_core;
 		//Fcyclic
 		}else if(this.distribution_socket == 'fcyclic'){
 			socket = task_number % this.sockets;
-			cores_per_socket = Math.ceil(Math.ceil(tasks_in_node * cpus_per_task / this.threads) / this.sockets);
+			cores_per_socket = Math.ceil(Math.ceil(tasks_in_node * cpus_per_task / this.threads_per_core) / this.sockets);
 			while (core >= cores_per_socket) {
 				socket  = socket + 1;
-				var diff = (core - cores_per_socket) * this.threads + thread;
-				core = Math.floor((Math.floor(task_number / this.sockets) * cpus_per_task + diff) / this.threads);
-				thread = (Math.floor(task_number / this.sockets) * cpus_per_task + diff) % this.threads;
+				var diff = (core - cores_per_socket) * this.threads_per_core + thread;
+				core = Math.floor((Math.floor(task_number / this.sockets) * cpus_per_task + diff) / this.threads_per_core);
+				thread = (Math.floor(task_number / this.sockets) * cpus_per_task + diff) % this.threads_per_core;
 			}
 		}
 
@@ -111,7 +111,7 @@ class Rank_Ldom {
 		
 		for(var socket=0; socket<this.sockets; socket++){
 			for(var core=0; core<this.cores; core++){
-				for(var thread=0; thread<this.threads; thread++){
+				for(var thread=0; thread<this.threads_per_core; thread++){
 					if(!this.isBinded(node, this.socket_arr[socket], thread, core)){
 						this.bindCore(node, this.socket_arr[socket], thread, core);
 						return [node, this.socket_arr[socket], thread, core];

@@ -6,21 +6,21 @@ var styles =   {"colors": ["#7393dd", "#ff8200", "#0064b5", "#80c6ff", "#00467f"
 				"socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"],
 				"task_height": 0}
 				
-var supercomputer_attributes = {"juwels": {"sockets": 2, "cores": 24, "task_per_cores": 2,
+var supercomputer_attributes = {"juwels": {"sockets": 2, "cores": 24, "threads": 2,
 										   "affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
-								"juwels-gpu": {"sockets": 2, "cores": 20, "task_per_cores": 2, 
+								"juwels-gpu": {"sockets": 2, "cores": 20, "threads": 2, 
 											   "affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
-								"juwels-booster" : {"sockets": 8, "cores": 6, "task_per_cores": 2,
+								"juwels-booster" : {"sockets": 8, "cores": 6, "threads": 2,
 													"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
-								"jureca-dc": {"sockets": 8, "cores": 16, "task_per_cores": 2, 
+								"jureca-dc": {"sockets": 8, "cores": 16, "threads": 2, 
 											  "affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"}, 
-								"jureca-gpu": {"sockets": 8, "cores": 16, "task_per_cores": 2,
+								"jureca-gpu": {"sockets": 8, "cores": 16, "threads": 2,
 											   "affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
-								"jureca-booster": {"sockets": 1, "cores": 68, "task_per_cores": 4, 
+								"jureca-booster": {"sockets": 1, "cores": 68, "threads": 4, 
 												   "affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
-								"jusuf": {"sockets": 8, "cores": 16, "task_per_cores": 2, 
+								"jusuf": {"sockets": 8, "cores": 16, "threads": 2, 
 										  "affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/cluster/affinity.html"}, 
-								"jusuf-gpu": {"sockets": 8, "cores": 16, "task_per_cores": 2, 
+								"jusuf-gpu": {"sockets": 8, "cores": 16, "threads": 2, 
 											  "affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/cluster/affinity.html"}}
 var default_options =  {"supercomputer" : "JUWELS", 
 					    "modus" : "task",
@@ -28,7 +28,7 @@ var default_options =  {"supercomputer" : "JUWELS",
 					    "nodes" : 1,
 					    "task" : 1,
 					    "cpu_per_task" : 1,
-					    "hint" : "",
+					    "threads-per-core" : 1,
 					    "distribution_node" : "block",
 					    "distribution_socket" : "cyclic",
 		    		    "distribution_core" : "fcyclic"}
@@ -85,7 +85,7 @@ function switchMode(mode){
 		document.getElementById("task").disabled = false;
 		document.getElementById("cpu_per_task").disabled = false;
 				document.getElementById("cpu_bind").disabled = false;
-		document.getElementById("hint").disabled = false;
+		document.getElementById("threads-per-core").disabled = false;
 		document.getElementById("distribution_node").disabled = false;
 		document.getElementById("distribution_socket").disabled = false;
 		document.getElementById("distribution_core").disabled = false;
@@ -97,7 +97,7 @@ function switchMode(mode){
 		document.getElementById("task").disabled = false;
 		document.getElementById("cpu_per_task").disabled = false;
 				document.getElementById("cpu_bind").disabled = false;
-		document.getElementById("hint").disabled = false;
+		document.getElementById("threads-per-core").disabled = false;
 		document.getElementById("distribution_node").disabled = false;
 		document.getElementById("distribution_socket").disabled = false;
 		document.getElementById("distribution_core").disabled = false;
@@ -112,13 +112,21 @@ function switchMode(mode){
 		document.getElementById("task").disabled = true;
 		document.getElementById("cpu_per_task").disabled = true;
 		document.getElementById("cpu_bind").disabled = true;
-		document.getElementById("hint").disabled = true;
+		document.getElementById("threads-per-core").disabled = true;
 		document.getElementById("distribution_node").disabled = true;
 		document.getElementById("distribution_socket").disabled = true;
 		document.getElementById("distribution_core").disabled = true;
 		hex2Bin(document.getElementById("hex2bin").value);
 	}
 	}
+
+/**
+ * Onchange-Event to switch between systems
+ */					    
+function switchSystem(system){
+	document.getElementById("threads-per-core").max = supercomputer_attributes[system]['threads']; 
+	document.getElementById("threads-per-core").value = 1
+}
 
 /**
  * Onchange-Event to switch between different CPU-Bind options.
@@ -186,14 +194,14 @@ function setURL(){
 /**
  * Create command from configuration
  */
-function createCommand(nodes, task, cpu_per_task, sockets, cores, threads_per_cores, cpu_bind, distribution_node, distribution_socket, distribution_core, hint){
+function createCommand(nodes, task, cpu_per_task, cpu_bind, distribution_node, distribution_socket, distribution_core, threads_per_core){
 	//create command line
 	var command = document.getElementById('command');
 	command.innerHTML = "";
 	var p = document.createElement('code');
 			p.innerHTML = '-N ' + nodes + ' -n ' + task + ' -c ' + cpu_per_task + ' --cpu-bind=' + cpu_bind + 
-				 	' --distribution=' + distribution_node + ':' + distribution_socket + ':' + distribution_core;
-		if(hint != '-') p.innerHTML +=  ' --hint=' + hint;
+				 	' --distribution=' + distribution_node + ':' + distribution_socket + ':' + distribution_core + 
+					' --threads-per-core=' + threads_per_core;
 	
 	p.style.textAlign = "center";
 	command.appendChild(p);
@@ -209,7 +217,7 @@ function generateForm() {
 	var supercomputer = document.getElementById('supercomputer').value;
 	var sockets = supercomputer_attributes[supercomputer]['sockets']; 
 	var cores = supercomputer_attributes[supercomputer]['cores']; 
-	var threads_per_cores = supercomputer_attributes[supercomputer]['task_per_cores']; 
+	var threads = supercomputer_attributes[supercomputer]['threads']; 
 	
 	//Get all parameter for tasks
 	var task = document.getElementById('task').value; 
@@ -222,7 +230,7 @@ function generateForm() {
 	var distribution_node = document.getElementById('distribution_node').value; 
 	var distribution_socket = document.getElementById('distribution_socket').value;
 	var distribution_core = document.getElementById('distribution_core').value;
-	var hint = document.getElementById('hint').value;
+	var threads_per_core = document.getElementById('threads-per-core').value;
 	
 	var output = document.getElementById('output');
 	
@@ -230,7 +238,7 @@ function generateForm() {
 	setURL();
 	
 	//Validator
-	var validator = new Validator(sockets, cores, threads_per_cores, task, cpu_per_task, nodes, cpu_bind, distribution_socket, distribution_core, hint);
+	var validator = new Validator(sockets, cores, task, cpu_per_task, nodes, cpu_bind, distribution_socket, distribution_core, threads_per_core);
 	if(!validator.isValidOptions()){
 		if(mode == 'task') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high</div>';
 		if(mode == 'node') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of nodes too low</div>';
@@ -241,34 +249,34 @@ function generateForm() {
 		output.innerHTML = '<div id="warning"><i class="fa fa-cog fa-spin"></i> This version is currently not available</div>';
 		return;
 	}
-	createCommand(nodes, task, cpu_per_task, sockets, cores, threads_per_cores, cpu_bind, distribution_node, distribution_socket, distribution_core, hint);
+	createCommand(nodes, task, cpu_per_task, cpu_bind, distribution_node, distribution_socket, distribution_core, threads_per_core);
 	switch(cpu_bind){
 		case 'rank':
-			var CPU_Bind = new Rank(nodes, sockets, cores, threads_per_cores, distribution_node, distribution_socket, hint, task, cpu_per_task);
+			var CPU_Bind = new Rank(nodes, sockets, cores, threads, distribution_node, distribution_socket, threads_per_core, task, cpu_per_task);
 			break;
 		case 'rank_ldom':
-			var CPU_Bind = new Rank_Ldom(nodes, sockets, cores, threads_per_cores, distribution_node, distribution_socket, hint, task);
+			var CPU_Bind = new Rank_Ldom(nodes, sockets, cores, threads, distribution_node, distribution_socket, threads_per_core, task);
 			break;
 		case 'threads':
-			var CPU_Bind = new Threads(nodes, sockets, cores, threads_per_cores,
-				distribution_node, distribution_socket, distribution_core, hint, task);
+			var CPU_Bind = new Threads(nodes, sockets, cores, threads,
+				distribution_node, distribution_socket, distribution_core, threads_per_core, task);
 			break;
 		case 'cores':
-			var CPU_Bind = new Cores(nodes, sockets, cores, threads_per_cores,
-				distribution_node, distribution_socket, distribution_core, hint, task, mode); //direkt array zurückliefern über funktion!!!
+			var CPU_Bind = new Cores(nodes, sockets, cores, threads,
+				distribution_node, distribution_socket, distribution_core, threads_per_core, task, mode); //direkt array zurückliefern über funktion!!!
 			break;
 	}
-	var tasks = createTasks(CPU_Bind, parseInt(task), parseInt(cpu_per_task), mode, hint);
+	var tasks = createTasks(CPU_Bind, parseInt(task), parseInt(cpu_per_task), mode, threads_per_core);
 	createContent(tasks, mode);
 }
 
 
-function createTasks(CPU_Bind, task_per_node, cpu_per_task, mode, hint){
+function createTasks(CPU_Bind, task_per_node, cpu_per_task, mode, threads_per_core){
 	//create list with 0 and 1 for the task
 	var nodes = parseInt(document.getElementById('nodes').value);
 	var sockets = CPU_Bind.sockets; //Sockets 
 	var cores = CPU_Bind.cores; // Cores
-	var threads_per_cores = CPU_Bind.threads_per_cores; //virtuelle Cores
+	var threads = CPU_Bind.threads; //virtuelle Cores
 	
 	if(mode == 'task'){ //Task-Mode
 		//direkt bindet nutzen um doppelt erstellung zu vermeiden!!!
@@ -277,8 +285,8 @@ function createTasks(CPU_Bind, task_per_node, cpu_per_task, mode, hint){
 		for(var task=0; task<task_per_node; task++){ 
 			tasks[task] = new Array(sockets);
 			for(var socket=0; socket<sockets; socket++){
-				var array_for_task = new Array(threads_per_cores);
-				for(var thread=0; thread<threads_per_cores;thread++){
+				var array_for_task = new Array(threads);
+				for(var thread=0; thread<threads;thread++){
 					array_for_task[thread] = new Array(cores);
 				}
 				tasks[task][socket] = array_for_task;
@@ -287,10 +295,10 @@ function createTasks(CPU_Bind, task_per_node, cpu_per_task, mode, hint){
 		//Fill the Task Array
 		for(var task=0; task<task_per_node; task++){
 			for(var cpu=0; cpu<cpu_per_task; cpu++){
-				if(CPU_Bind.name == 'Cores' && hint=='-'){
+				if(CPU_Bind.name == 'Cores'){
 					var [node, socket, x, core] = 
 						CPU_Bind.getCoreToBind(task, cpu_per_task, cpu);
-					for(var thread=0; thread<threads_per_cores; thread++){
+					for(var thread=0; thread<threads_per_core; thread++){
 						//if(tasks[task][socket][thread][core] != undefined){
 						//	tasks[task][socket][thread][core] += "|" + task;
 						//}else{
@@ -311,8 +319,8 @@ function createTasks(CPU_Bind, task_per_node, cpu_per_task, mode, hint){
 		for(var node=0; node<nodes; node++){
 			tasks[node] = new Array(sockets);
 			for(var socket=0; socket<sockets; socket++){
-				var array_for_task = new Array(threads_per_cores);
-				for(var thread=0; thread<threads_per_cores; thread++){
+				var array_for_task = new Array(threads);
+				for(var thread=0; thread<threads; thread++){
 					array_for_task[thread] = new Array(cores);
 				}
 				tasks[node][socket] = array_for_task;
@@ -322,10 +330,10 @@ function createTasks(CPU_Bind, task_per_node, cpu_per_task, mode, hint){
 		//Fill the Task Array
 		for(var task=0; task<task_per_node; task++){
 			for(var cpu=0; cpu<cpu_per_task; cpu++){
-				if(CPU_Bind.name == 'Cores' && hint=='-'){
+				if(CPU_Bind.name == 'Cores'){
 					var [node, socket, x, core] = 
 						CPU_Bind.getCoreToBind(task, cpu_per_task, cpu);
-					for(var thread=0; thread<threads_per_cores; thread++){
+					for(var thread=0; thread<threads_per_core; thread++){
 						//if(tasks[node][socket][thread][core] != undefined){
 						//	tasks[node][socket][thread][core] += "|" + task;
 						//}else{
@@ -385,10 +393,24 @@ function createContent(tasks, mode){
 				    core.setAttribute("height", "20");
 				    
 				    const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
-				    pin.setAttribute("x", 36 + j*(tasks[i][j][k].length+1)*22 + l*22);
-				    pin.setAttribute("y", margin + 25 + i*(tasks[i][j].length+2)*22 + k*22);
+				    if (tasks[i][j][k][l]>99) {
+						xoffset = 6
+						yoffset = 1
+						fontsize = "0.7em"
+					} else if (tasks[i][j][k][l]>9) {
+						xoffset = 4
+						yoffset = 1
+						fontsize = "0.9em"
+					} else {
+						xoffset = 0
+						yoffset = 0
+						fontsize = "1.0em"
+					}
+					pin.setAttribute("x", 36 - xoffset + j*(tasks[i][j][k].length+1)*22 + l*22);
+				    pin.setAttribute("y", margin + 25 - yoffset + i*(tasks[i][j].length+2)*22 + k*22);
 				    pin.setAttribute("width", "30");
 				    pin.setAttribute("height", "30");
+					pin.setAttribute("font-size", fontsize);
 				    
 				    if(tasks[i][j][k][l] != undefined){
 						pin.textContent = tasks[i][j][k][l];
@@ -452,25 +474,25 @@ function hex2Bin(hex){
 	var supercomputer = document.getElementById('supercomputer').value;
 	var sockets = supercomputer_attributes[supercomputer]['sockets']; //Sockets 
 	var cores = supercomputer_attributes[supercomputer]['cores']; // Cores
-	var threads_per_cores = supercomputer_attributes[supercomputer]['task_per_cores']; //virtuelle Cores
+	var threads = supercomputer_attributes[supercomputer]['threads']; //virtuelle Cores
 	//Create Task Array
 	var tasks = new Array(1);
 	tasks[0] = new Array(sockets);
 	for(var socket=0; socket<sockets; socket++){
-		var array_for_task = new Array(threads_per_cores);
-		for(var thread=0; thread<threads_per_cores;thread++){
+		var array_for_task = new Array(threads);
+		for(var thread=0; thread<threads;thread++){
 			array_for_task[thread] = new Array(cores);
 		}
 		tasks[0][socket] = array_for_task;
 	}
 	//hex to bin
-	var all_cores = socket*cores*threads_per_cores;
+	var all_cores = socket*cores*threads;
 	var sub = "0".repeat(all_cores);
 	var dezi = BigInt(hex)
 	var bin = ((sub + dezi.toString(2)).split("").reverse().join("")).substring(0,all_cores);
 	//Fill Task Array
 	var bit = 0;
-	for(var thread=0; thread<threads_per_cores;thread++){
+	for(var thread=0; thread<threads;thread++){
 		for(var socket=0; socket<sockets; socket++){
 			for(var core=0; core<cores; core++){
 				if(bin[bit] == '1') tasks[0][socket][thread][core] = '0'
