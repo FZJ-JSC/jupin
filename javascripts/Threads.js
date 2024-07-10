@@ -152,6 +152,20 @@ class Threads {
 					let cpu_in_socket = task_in_socket * this.options["cpu_per_task"]+ cpu
 					thread = Math.floor(cpu_in_socket / cores_per_socket[socket]) % this.options["threads_per_core"]
 					core = cpu_in_socket % cores_per_socket[socket]
+					if (cpu_in_socket >= cores_per_socket[socket]*this.options["threads_per_core"]) {
+						if ((tasks_in_node - full_tasks) * this.options["cpu_per_task"] > full_tasks || task_number < full_tasks) {
+							socket = (socket + 1) % this.options["sockets"]
+						}
+						for (var s = socket; s < socket + this.options["sockets"]; s++) {
+							for(var core=0; core<cores_per_socket[s%this.options["sockets"]]; core++){
+								for(var thread=0; thread<this.options["threads_per_core"]; thread++){
+									if(!this.isBinded(tasks,outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core)){
+										return [outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core];
+									}
+								}
+							}
+						}
+					}
 					break;
 			}
 		// Distribution Socket Fcyclic
