@@ -33,7 +33,6 @@
 					      <option value="juwels-booster">JUWELS-BOOSTER</option>
 					      <option value="jureca-dc">JURECA-DC</option>
 					      <option value="jureca-gpu">JURECA-GPU</option>
-					      <option value="jureca-booster">JURECA-Booster</option>
 					      <option value="jusuf">JUSUF</option>
 					      <option value="jusuf-gpu">JUSUF-GPU</option>
 					  </select>
@@ -80,8 +79,8 @@
 					  <select id="cpu_bind" onchange="generateForm(), switchCPUBind(this.value);">
 					      <option selected>threads</option>
 					      <option>rank</option>
-					      <option>rank_ldom</option>
-					      <option>cores</option>
+					      <!--<option>rank_ldom</option>
+					      <option>cores</option>-->
 					  </select>
 					  
 					  <br><br><br>
@@ -106,16 +105,16 @@
 					      <legend>Socket</legend>
 						  <select id="distribution_socket" onchange="generateForm()">
 						      <option selected>cyclic</option>
-						      <option>block</option>
-						      <option>fcyclic</option>
+						      <!--<option>block</option>
+						      <option>fcyclic</option>-->
 						  </select>
 					  </fieldset>
 					  <fieldset>
 					      <legend>Core</legend>
 						  <select id="distribution_core" onchange="generateForm()">
-						      <option selected>fcyclic</option>
-						      <option>block</option>
-						      <option>cyclic</option>
+						      <option>fcyclic</option>
+						      <!--<option>block</option>-->
+						      <option selected>cyclic</option>
 						  </select>
 					  </fieldset>
 					  

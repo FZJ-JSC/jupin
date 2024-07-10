@@ -16,8 +16,6 @@ var supercomputer_attributes = {"juwels": {"sockets": 2, "cores": 24, "threads":
 		 "affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"}, 
 "jureca-gpu": {"sockets": 8, "cores": 16, "threads": 2,
 		  "affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
-"jureca-booster": {"sockets": 1, "cores": 68, "threads": 4, 
-			  "affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
 "jusuf": {"sockets": 8, "cores": 16, "threads": 2, 
 	 "affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/cluster/affinity.html"}, 
 "jusuf-gpu": {"sockets": 8, "cores": 16, "threads": 2, 
@@ -31,7 +29,7 @@ var default_options =  {"supercomputer" : "JUWELS",
 "threads_per_core" : 1,
 "distribution_node" : "block",
 "distribution_socket" : "cyclic",
-"distribution_core" : "fcyclic"}
+"distribution_core" : "cyclic"}
 
 window.onload = function () {
 getAndCompleteURL(default_options);
