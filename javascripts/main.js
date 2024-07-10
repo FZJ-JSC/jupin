@@ -54,7 +54,7 @@ function closeAlert(elem){
 /**
 * Onclick-Event to zoom in/out
 */
-function zoom(){
+function switchZoom(){
 	//scale container to display width
 	var src = document.getElementById('zoom').getAttribute("src");
 	var svg = document.getElementById('content');
@@ -74,6 +74,25 @@ function zoom(){
 		svg.style.height  = task_height + "px";
 	}
 }	
+
+function zoom(){
+	//scale container to display width
+	var src = document.getElementById('zoom').getAttribute("src");
+	var svg = document.getElementById('content');
+	var div_width = document.getElementById('output').clientWidth;
+	var svg_width = document.getElementById('content').clientWidth;
+	var scale = div_width/svg_width -0.01;
+	//zoom out
+	if(src == "images/plus.png"){
+		svg.style.transform = "scale("+scale+")";
+		svg.style.transformOrigin  = "top left";
+		svg.style.height  = height * scale + "px";
+	//zoom in
+	}else{
+		svg.style.transform = "scale(1)";
+		svg.style.height  = task_height + "px";
+	}
+}
 
 /**
 * Onchange-Event to switch between Task-, Node- and Hex2Bin-Mode
@@ -385,6 +404,7 @@ function createContent(tasks, mode){
 	}
 	// attach container to document
 	output.appendChild(svg);
+	zoom()
 }
 
 /**
