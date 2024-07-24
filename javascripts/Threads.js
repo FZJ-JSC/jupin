@@ -21,6 +21,7 @@ class Threads {
 				task_number++;
 			}
 		}
+		this.last = [0,0] //task, socket
 	}
 
 	getPinning() {
@@ -48,6 +49,7 @@ class Threads {
 					[outer_pos, socket, thread, core] = this.getNextUnbindedCore(tasks, task);
 					socket = this.socket_arr[socket]
 				}
+				this.last = [task, socket]
 				tasks[outer_pos][socket][thread][core] = task;
 			}
 		}
@@ -129,18 +131,9 @@ class Threads {
 					
 					//Get next unbinded core if socket is too full
 					if (core >= cores_per_socket[socket]) {
-						if ((tasks_in_node - full_tasks) * this.options["cpu_per_task"] > full_tasks || task_number < full_tasks) {
-							socket = (socket + 1) % this.options["sockets"]
-						}
-						for (var s = socket; s < socket + this.options["sockets"]; s++) {
-							for(var core=0; core<cores_per_socket[s%this.options["sockets"]]; core++){
-								for(var thread=0; thread<this.options["threads_per_core"]; thread++){
-									if(!this.isBinded(tasks,outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core)){
-										return [outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core];
-									}
-								}
-							}
-						}
+						var tmp = (tasks_in_node - full_tasks)*this.options["cpu_per_task"] - full_tasks
+						var overflow = ( tmp + (tmp % this.options["threads_per_core"]) == cpu && task_number == full_tasks);
+						[outer_pos, socket, thread, core] = this.getNextUnbindedCore(tasks, task, overflow)
 					}
 					break;
 				case('fcyclic'):
@@ -151,19 +144,10 @@ class Threads {
 
 					thread = Math.floor(cpu_in_socket / cores_per_socket[socket]) % this.options["threads_per_core"]
 					core = cpu_in_socket % cores_per_socket[socket]
-					if (cpu_in_socket >= cores_per_socket[socket]*this.options["threads_per_core"]) {
-						if ((tasks_in_node - full_tasks) * this.options["cpu_per_task"] > full_tasks || task_number < full_tasks) {
-							socket = (socket + 1) % this.options["sockets"]
-						}
-						for (var s = socket; s < socket + this.options["sockets"]; s++) {
-							for(var core=0; core<cores_per_socket[s%this.options["sockets"]]; core++){
-								for(var thread=0; thread<this.options["threads_per_core"]; thread++){
-									if(!this.isBinded(tasks,outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core)){
-										return [outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core];
-									}
-								}
-							}
-						}
+
+					//Get next unbinded core if socket is too full
+					if (cpu_in_socket >= cores_per_socket[socket]*this.options["threads_per_core"] || (task_number >= full_tasks)) {
+						[outer_pos, socket, thread, core] = this.getNextUnbindedCore(tasks, task)
 					}
 					break;
 			}
@@ -200,23 +184,30 @@ class Threads {
 		return [outer_pos, socket, thread, core];
 	}
 	
-	getNextUnbindedCore(tasks, task){
-		var cores_per_socket = this.getCoresPerSocket()
+	getNextUnbindedCore(tasks, task, overflow = false){
+		//Distribution-Node
 		if(this.options["distribution_node"] == 'block'){
-			var node = this.node_allocation[task];
+			var node = this.node_allocation[task]
 		}else{
 			var node = task%this.options["nodes"];
 		}
 		if(this.options["mode"] == "task") var outer_pos = task; else var outer_pos = node;
-		for(var socket=0; socket<this.options["sockets"]; socket++){
-			for(var core=0; core<cores_per_socket[socket]; core++){
+
+		//get unbinded core
+		var cores_per_socket = this.getCoresPerSocket()
+		var socket = this.socket_arr.indexOf(this.last[1])
+		//change socket, if new task
+		if (this.last[0] != task || overflow) {
+			socket = (socket + 1) % this.options["sockets"]
+		}
+		for (var s = socket; s < socket + this.options["sockets"]; s++) {
+			for(var core=0; core<cores_per_socket[s%this.options["sockets"]]; core++){
 				for(var thread=0; thread<this.options["threads_per_core"]; thread++){
-					if(!this.isBinded(tasks, outer_pos, this.socket_arr[socket], thread, core)){
-						return [outer_pos, this.socket_arr[socket], thread, core];
+					if(!this.isBinded(tasks,outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core)){
+						return [outer_pos, s%this.options["sockets"], thread, core];
 					}
 				}
 			}
-			
 		}
 		
 		return null;
