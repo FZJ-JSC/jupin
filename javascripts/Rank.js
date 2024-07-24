@@ -78,39 +78,17 @@ class Rank {
 			core = (current - thread * number_of_cores) % this.options["cores"]; 
 		//Cyclic 
 		}else if(this.options["distribution_socket"] == 'cyclic'){
-			var cores_per_socket = new Array(this.options["sockets"]);
-			var full_tasks = Math.floor(number_of_cores/Math.ceil(this.options["cpu_per_task"]/this.options["threads_per_core"]))
-			for (var s = 0; s < this.options["sockets"]; s++) {
-				cores_per_socket[s] = Math.floor(full_tasks/this.options["sockets"]) * Math.ceil(this.options["cpu_per_task"]/this.options["threads_per_core"])
-				if (s < full_tasks % this.options["sockets"]) cores_per_socket[s] += Math.ceil(this.options["cpu_per_task"]/this.options["threads_per_core"])
-			}
-			if ((Math.floor(this.options["task"]/this.options["nodes"]) - full_tasks) * this.options["cpu_per_task"] > full_tasks) {
-				cores_per_socket[full_tasks%this.options["sockets"]] += Math.ceil(((Math.floor(this.options["task"]/this.options["nodes"]) - full_tasks) * this.options["cpu_per_task"] - full_tasks)/this.options["threads_per_core"])
-			}
-			for (var s = 0; s < this.options["sockets"]; s++) {
-				if (cores_per_socket[s] > this.options["cores"]) {
-					cores_per_socket[s+1] += cores_per_socket[s] - this.options["cores"];
-					cores_per_socket[s] = this.options["cores"]
-				}
-			}
-
-			var sum = 0
-			for (var t = 0; t < this.options["threads_per_core"]; t++){
-				for (var s = 0; s < this.options["sockets"]; s++) {
-					sum += cores_per_socket[s]
-					if (current < sum) {
-						socket = s
-						break
-					}
-				}
-				if (current < sum) break
-			}
+			var cores_per_socket = this.getCoresPerSocket()
 
 			var used_cores = thread * number_of_cores
-			for (var s = 0; s < socket; s++) {
+			for (var s = 0; s < this.options["sockets"]; s++) {
+				if (current < used_cores+cores_per_socket[s]) {
+					socket = s
+					core  = current - used_cores
+					break
+				}
 				used_cores += cores_per_socket[s]
 			}
-			core = (current - used_cores) % cores_per_socket[socket]; 
 		//Fcyclic
 		}else if(this.options["distribution_socket"] == 'fcyclic'){
 			cores_per_socket = Math.ceil(number_of_cores / this.options["sockets"]);
@@ -121,4 +99,52 @@ class Rank {
 		if(this.options["mode"] == "task") var outer_pos = task; else var outer_pos = node;
 		return [outer_pos, this.socket_arr[socket], thread, core];
 	}
+
+	getCoresPerSocket() {
+		var cores_per_socket = new Array(this.options["sockets"]).fill(0);
+		if(this.options["distribution_node"] == 'block'){
+			var node = this.node_allocation[task]
+		}else{
+			var node = task%this.options["nodes"];
+		}
+		var tasks_in_node = Math.floor(this.options["task"]/this.options["nodes"]);
+		if (node < this.options["task"]%this.options["nodes"]) {
+			tasks_in_node = tasks_in_node +1;
+		}
+		if (this.options["distribution_socket"] == "cyclic") {
+			var block = Math.ceil(this.options["cpu_per_task"]/this.options["threads_per_core"])
+			var number_of_blocks = Math.floor((tasks_in_node*this.options["cpu_per_task"])/(block*this.options["threads_per_core"]))
+			var socket = 0
+
+			//allocate core-blocks
+			for (var b = 0; b < number_of_blocks; b++) {
+				cores_per_socket[socket] += block
+				//if socket completely filled, use next socket
+				while (cores_per_socket[socket] > this.options["cores"]) {
+					var tmp = cores_per_socket[socket] - this.options["cores"]
+					cores_per_socket[socket] = this.options["cores"]
+					socket = (socket+1)%this.options["sockets"]
+					cores_per_socket[socket] += tmp
+				}
+				socket = (socket+1)%this.options["sockets"]
+			}
+
+			//allocate remaining cores
+			cores_per_socket[socket] += Math.ceil(((this.options["task"]*this.options["cpu_per_task"])%(block*this.options["threads_per_core"]))/this.options["threads_per_core"])
+			//if socket completely filled, use next socket
+			while (cores_per_socket[socket] > this.options["cores"]) {
+				var tmp = cores_per_socket[socket] - this.options["cores"]
+				cores_per_socket[socket] = this.options["cores"]
+				socket = (socket+1)%this.options["sockets"]
+				cores_per_socket[socket] += tmp
+			}
+		} else {
+			//allocate full sockets
+			for (var socket = 0; socket < this.options["sockets"]; socket++) {
+				cores_per_socket[socket] = this.options["cores"]
+			}
+		}
+		return cores_per_socket
+	}
 }
+console.log("Done")
