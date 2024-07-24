@@ -147,7 +147,6 @@ function switchMode(mode){
 */					    
 function switchSystem(system){
 	document.getElementById("threads_per_core").max = supercomputer_attributes[system]['threads']; 
-	document.getElementById("threads_per_core").value = 1
 }
 
 /**
