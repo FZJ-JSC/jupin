@@ -66,12 +66,12 @@ function switchZoom(){
 		document.getElementById('zoom').setAttribute("src", "images/plus.png");
 		svg.style.transform = "scale("+scale+")";
 		svg.style.transformOrigin  = "top left";
-		svg.style.height  = height * scale + "px";
+		svg.style.height  = styles.task_height * scale + "px";
 	//zoom in
 	}else{
 		document.getElementById('zoom').setAttribute("src", "images/minus.png");
 		svg.style.transform = "scale(1)";
-		svg.style.height  = task_height + "px";
+		svg.style.height  = styles.task_height + "px";
 	}
 }	
 
@@ -86,11 +86,11 @@ function zoom(){
 	if(src == "images/plus.png"){
 		svg.style.transform = "scale("+scale+")";
 		svg.style.transformOrigin  = "top left";
-		svg.style.height  = height * scale + "px";
+		svg.style.height  = styles.task_height * scale + "px";
 	//zoom in
 	}else{
 		svg.style.transform = "scale(1)";
-		svg.style.height  = task_height + "px";
+		svg.style.height  = styles.task_height + "px";
 	}
 }
 
@@ -138,7 +138,7 @@ function switchMode(mode){
 		document.getElementById("distribution_node").disabled = true;
 		document.getElementById("distribution_socket").disabled = true;
 		document.getElementById("distribution_core").disabled = true;
-	hex2Bin(document.getElementById("hex2bin").value);
+		hex2Bin(document.getElementById("hex2bin").value);
 	}
 }
 
@@ -146,7 +146,12 @@ function switchMode(mode){
 * Onchange-Event to switch between systems
 */					    
 function switchSystem(system){
-	document.getElementById("threads_per_core").max = supercomputer_attributes[system]['threads']; 
+	document.getElementById("threads_per_core").max = supercomputer_attributes[system]['threads'];
+	if (document.getElementById("modus").value === "hex2bin"){
+		hex2Bin(document.getElementById("hex2bin").value);
+	} else {
+		generateForm()
+	}
 }
 
 /**
@@ -178,7 +183,7 @@ function getAndCompleteURL(options){
 		//set selects and inputs
 		for (var i = 0; i<help_parameters.length; i++){
 			var key = help_parameters[i].split('=')[0]
-			var value = help_parameters[i].split('=')[1]
+			var value = decodeURIComponent(help_parameters[i].split('=')[1])
 			options[key] = value
 			var input = document.getElementById(key);
 			input.value = value;
@@ -207,7 +212,7 @@ function setURL(){
 	}
 	for (var i=0; i<inputs.length; i++) {
 		const url = new URL(window.location);
-		url.searchParams.set(inputs[i].id, inputs[i].value.toLowerCase());
+		url.searchParams.set(inputs[i].id, inputs[i].value.toLowerCase().replace(/\s+/g, ''));
 		window.history.replaceState({}, '', url);
 	}
 }
@@ -220,9 +225,13 @@ function createCommand(options){
 	var command = document.getElementById('command');
 	command.innerHTML = "";
 	var p = document.createElement('code');
-	p.innerHTML = '-N ' + options["nodes"] + ' -n ' + options["task"] + ' -c ' + options["cpu_per_task"] + ' --cpu-bind=' + options["cpu_bind"] + 
-	' --distribution=' + options["distribution_node"] + ':' + options["distribution_socket"] + ':' + options["distribution_core"] +
-	' --threads-per-core=' + options["threads_per_core"];
+	if (options["mode"] === "hex2bin") {
+		p.innerHTML = '--cpu-bind=mask_cpu:' + options["hex2bin"]
+	} else {
+		p.innerHTML = '-N ' + options["nodes"] + ' -n ' + options["task"] + ' -c ' + options["cpu_per_task"] + ' --cpu-bind=' + options["cpu_bind"] + 
+		' --distribution=' + options["distribution_node"] + ':' + options["distribution_socket"] + ':' + options["distribution_core"] +
+		' --threads-per-core=' + options["threads_per_core"];
+	}
 
 	p.style.textAlign = "center";
 	command.appendChild(p);
@@ -249,6 +258,9 @@ function getOptions() {
 	options["distribution_socket"] = document.getElementById('distribution_socket').value;
 	options["distribution_core"] = document.getElementById('distribution_core').value;
 	options["threads_per_core"] = parseInt(document.getElementById('threads_per_core').value);
+
+	//Get all parameter for hex2bin
+	options["hex2bin"] = document.getElementById('hex2bin').value.replace(/\s+/g, '');
 
 	return options;
 }
@@ -305,13 +317,13 @@ function createContent(tasks, mode){
 
 	//get needed width and height or a bit more
 	var width = 30 + (tasks[0].length + (tasks[0].length*tasks[0][0][0].length))*22;
-	var height = tasks.length * tasks[0][0].length * 90;
+	styles.task_height = tasks.length * tasks[0][0].length * 90;
 	// create the svg element
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	// set width and height
 	svg.setAttribute("id", "content");
 	svg.setAttribute("width", width);
-	svg.setAttribute("height", height);
+	svg.setAttribute("height", styles.task_height);
 
 	if(tasks[0].length == 8) margin = 50; else margin = 20;
 	for(var i=0; i<tasks.length; i++){ //Tasks/Nodes
@@ -410,36 +422,39 @@ function createContent(tasks, mode){
 * Create pinning from hex-mask
 */
 function hex2Bin(hex){
-//zusammenführen um nicht zwei for scheifen zu haben ??!!!
-var supercomputer = document.getElementById('supercomputer').value;
-var sockets = supercomputer_attributes[supercomputer]['sockets']; //Sockets 
-var cores = supercomputer_attributes[supercomputer]['cores']; // Cores
-var threads = supercomputer_attributes[supercomputer]['threads']; //virtuelle Cores
-//Create Task Array
-var tasks = new Array(1);
-tasks[0] = new Array(sockets);
-for(var socket=0; socket<sockets; socket++){
-var array_for_task = new Array(threads);
-for(var thread=0; thread<threads;thread++){
-array_for_task[thread] = new Array(cores);
-}
-tasks[0][socket] = array_for_task;
-}
-//hex to bin
-var all_cores = socket*cores*threads;
-var sub = "0".repeat(all_cores);
-var dezi = BigInt(hex)
-var bin = ((sub + dezi.toString(2)).split("").reverse().join("")).substring(0,all_cores);
-//Fill Task Array
-var bit = 0;
-for(var thread=0; thread<threads;thread++){
-for(var socket=0; socket<sockets; socket++){
-for(var core=0; core<cores; core++){
-if(bin[bit] == '1') tasks[0][socket][thread][core] = '0'
-bit++;
-}
-}
-}
-createContent(tasks, 'task');
-setURL();
+	hex = hex.replace(/\s+/g, '')
+	hex = hex.split(",")
+	var options = getOptions()
+	//Create Task Array
+	var tasks = new Array(hex.length);
+	for (var h=0; h < hex.length; h++){
+		tasks[h] = new Array(options["sockets"]);
+		for(var socket=0; socket<options["sockets"]; socket++){
+			var array_for_task = new Array(options["threads_per_core"]);
+			for(var thread=0; thread<options["threads_per_core"];thread++){
+				array_for_task[thread] = new Array(options["cores"]);
+			}
+			tasks[h][socket] = array_for_task;
+		}
+	}
+	//hex to bin
+	var all_cores = socket*options["cores"]*options["threads_per_core"];
+	var sub = "0".repeat(all_cores);
+	for (let i = 0; i < hex.length; i++) {
+		var dezi = BigInt(hex[i])
+		var bin = ((sub + dezi.toString(2)).split("").reverse().join("")).substring(0,all_cores);
+		//Fill Task Array
+		var bit = 0;
+		for(var thread=0; thread<options["threads_per_core"];thread++){
+			for(var socket=0; socket<options["sockets"]; socket++){
+				for(var core=0; core<options["cores"]; core++){
+					if(bin[bit] == '1') tasks[i][socket][thread][core] = '0'
+					bit++;
+				}
+			}
+		}
+	}
+	createContent(tasks, 'task');
+	setURL();
+	createCommand(options)
 }
