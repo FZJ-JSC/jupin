@@ -11,7 +11,9 @@ class Rank_Ldom {
 		}
 		this.node_allocation = {}; //task->node
 		var task_number = 0;
+		this.last = new Array(this.options["nodes"])
 		for(var node=0; node<this.options["nodes"]; node++){
+			this.last[node] = new Array(2) //task, socket
 			for(var k=0; k < parseInt(this.options["task"]/this.options["nodes"]); k++){
 				this.node_allocation[task_number] = node;
 				task_number++;
@@ -21,7 +23,6 @@ class Rank_Ldom {
 				task_number++;
 			}
 		}
-		this.last = [-1,-1]
 	}
 
 	getPinning() {
@@ -48,7 +49,7 @@ class Rank_Ldom {
 				if(this.isBinded(tasks, outer_pos, socket, thread, core)){
 					[outer_pos, socket, thread, core] = this.getNextUnbindedCore(tasks, task);
 				}
-				this.last = [task, socket]
+				if (this.options["mode"] == "task") this.last[0] = [task, socket]; else this.last[outer_pos] = [task, socket];
 				tasks[outer_pos][socket][thread][core] = task;
 			}
 		}
@@ -85,9 +86,7 @@ class Rank_Ldom {
 			if (core >= cores_per_socket[socket]) return this.getNextUnbindedCore(tasks,task);
 		//Cyclic 
 		}else if(this.options["distribution_socket"] == 'cyclic'){
-			socket = task_number % this.options["sockets"];
-			if (core >= this.options["cores"]) core = this.options["cores"] - 1; 
-			thread = (Math.floor(task_number / this.options["sockets"]) * this.options["cpu_per_task"] + cpu) % this.options["threads_per_core"];
+			return this.getNextUnbindedCore(tasks, task)
 		//Fcyclic
 		}else if(this.options["distribution_socket"] == 'fcyclic'){
 			socket = task_number % this.options["sockets"];
@@ -104,7 +103,7 @@ class Rank_Ldom {
 		return [outer_pos, socket, thread, core];
 	}
 	
-	getNextUnbindedCore(tasks, task, overflow = false){
+	getNextUnbindedCore(tasks, task){
 		//Distribution-Node
 		if(this.options["distribution_node"] == 'block'){
 			var node = this.node_allocation[task]
@@ -115,16 +114,16 @@ class Rank_Ldom {
 
 		//get unbinded core
 		var cores_per_socket = this.getCoresPerSocket()
-		var socket = this.socket_arr.indexOf(this.last[1])
+		var socket = this.socket_arr.indexOf(this.last[node][1])
 		//change socket, if new task
-		if (this.last[0] != task || overflow) {
+		if (this.last[node][0] != task) {
 			socket = (socket + 1) % this.options["sockets"]
 		}
 		for (var s = socket; s < socket + this.options["sockets"]; s++) {
 			for(var core=0; core<cores_per_socket[s%this.options["sockets"]]; core++){
 				for(var thread=0; thread<this.options["threads_per_core"]; thread++){
 					if(!this.isBinded(tasks,outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core)){
-						return [outer_pos, s%this.options["sockets"], thread, core];
+						return [outer_pos, this.socket_arr[s%this.options["sockets"]], thread, core];
 					}
 				}
 			}
