@@ -124,7 +124,7 @@ class Threads {
 					break;
 				case('cyclic'): 
 					var full_tasks = Math.floor(number_of_cores/Math.ceil(this.options["cpu_per_task"]/this.options["threads_per_core"]))
-					var cores_per_socket = this.getCoresPerSocket()
+					var cores_per_socket = this.getCoresPerSocket(node)
 
 					thread = cpu%this.options["threads_per_core"];
 					core = (shift*Math.round(this.options["cpu_per_task"]/this.options["threads_per_core"])+Math.floor(cpu/this.options["threads_per_core"]));
@@ -138,7 +138,7 @@ class Threads {
 					break;
 				case('fcyclic'):
 					var full_tasks = Math.floor(number_of_cores/Math.ceil(this.options["cpu_per_task"]/this.options["threads_per_core"]))
-					var cores_per_socket = this.getCoresPerSocket()
+					var cores_per_socket = this.getCoresPerSocket(node)
 					var task_in_socket = Math.floor(task_number / this.options["sockets"])
 					var cpu_in_socket = task_in_socket * this.options["cpu_per_task"]+ cpu
 
@@ -194,7 +194,7 @@ class Threads {
 		if(this.options["mode"] == "task") var outer_pos = task; else var outer_pos = node;
 
 		//get unbinded core
-		var cores_per_socket = this.getCoresPerSocket()
+		var cores_per_socket = this.getCoresPerSocket(node)
 		var socket = this.socket_arr.indexOf(this.last[1])
 		//change socket, if new task
 		if (this.last[0] != task || overflow) {
@@ -213,13 +213,8 @@ class Threads {
 		return null;
 	}
 
-	getCoresPerSocket() {
+	getCoresPerSocket(node) {
 		var cores_per_socket = new Array(this.options["sockets"]).fill(0);
-		if(this.options["distribution_node"] == 'block'){
-			var node = this.node_allocation[task]
-		}else{
-			var node = task%this.options["nodes"];
-		}
 		var tasks_in_node = Math.floor(this.options["task"]/this.options["nodes"]);
 		if (node < this.options["task"]%this.options["nodes"]) {
 			tasks_in_node = tasks_in_node +1;

@@ -78,7 +78,7 @@ class Rank {
 			core = (current - thread * number_of_cores) % this.options["cores"]; 
 		//Cyclic 
 		}else if(this.options["distribution_socket"] == 'cyclic'){
-			var cores_per_socket = this.getCoresPerSocket()
+			var cores_per_socket = this.getCoresPerSocket(node)
 
 			var used_cores = thread * number_of_cores
 			for (var s = 0; s < this.options["sockets"]; s++) {
@@ -100,13 +100,8 @@ class Rank {
 		return [outer_pos, this.socket_arr[socket], thread, core];
 	}
 
-	getCoresPerSocket() {
+	getCoresPerSocket(node) {
 		var cores_per_socket = new Array(this.options["sockets"]).fill(0);
-		if(this.options["distribution_node"] == 'block'){
-			var node = this.node_allocation[task]
-		}else{
-			var node = task%this.options["nodes"];
-		}
 		var tasks_in_node = Math.floor(this.options["task"]/this.options["nodes"]);
 		if (node < this.options["task"]%this.options["nodes"]) {
 			tasks_in_node = tasks_in_node +1;

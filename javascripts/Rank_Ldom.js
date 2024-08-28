@@ -78,7 +78,7 @@ class Rank_Ldom {
 		//Distribution-Socket
 		core = Math.floor((Math.floor(task_number / this.options["sockets"]) * this.options["cpu_per_task"] + cpu) / this.options["threads_per_core"]);
 		thread = (Math.floor(task_number / this.options["sockets"]) * this.options["cpu_per_task"] + cpu) % this.options["threads_per_core"];
-		cores_per_socket = this.getCoresPerSocket();
+		cores_per_socket = this.getCoresPerSocket(node);
 		//Block 
 		if(this.options["distribution_socket"] == 'block'){
 			var number_of_sockets = Math.ceil(tasks_in_node * this.options["cpu_per_task"]/(this.options["cores"] * this.options["threads_per_core"]))
@@ -113,7 +113,7 @@ class Rank_Ldom {
 		if(this.options["mode"] == "task") var outer_pos = task; else var outer_pos = node;
 
 		//get unbinded core
-		var cores_per_socket = this.getCoresPerSocket()
+		var cores_per_socket = this.getCoresPerSocket(node)
 		var socket = this.socket_arr.indexOf(this.last[node][1])
 		//change socket, if new task
 		if (this.last[node][0] != task) {
@@ -142,13 +142,8 @@ class Rank_Ldom {
 		}
 	}
 
-	getCoresPerSocket() {
+	getCoresPerSocket(node) {
 		var cores_per_socket = new Array(this.options["sockets"]).fill(0);
-		if(this.options["distribution_node"] == 'block'){
-			var node = this.node_allocation[task]
-		}else{
-			var node = task%this.options["nodes"];
-		}
 		var tasks_in_node = Math.floor(this.options["task"]/this.options["nodes"]);
 		if (node < this.options["task"]%this.options["nodes"]) {
 			tasks_in_node = tasks_in_node +1;
