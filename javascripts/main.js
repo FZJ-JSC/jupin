@@ -3,8 +3,7 @@
  */
  var styles =   {"colors": ["#7393dd", "#ff8200", "#0064b5", "#80c6ff", "#00467f",
 							"#b35b00", "#290aa3", "#ffc180" , "#1d0772"],
-				"socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"],
-				"task_height": 0}
+				"socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"]}
 
 var supercomputer_attributes = {
 	"juwels": {"sockets": 2, "cores": 24, "threads": 2, "gpus": [],
@@ -66,12 +65,10 @@ function switchZoom(){
 		document.getElementById('zoom').setAttribute("src", "images/plus.png");
 		svg.style.transform = "scale("+scale+")";
 		svg.style.transformOrigin  = "top left";
-		svg.style.height  = styles.task_height * scale + "px";
 	//zoom in
 	}else{
 		document.getElementById('zoom').setAttribute("src", "images/minus.png");
 		svg.style.transform = "scale(1)";
-		svg.style.height  = styles.task_height + "px";
 	}
 }	
 
@@ -86,11 +83,9 @@ function zoom(){
 	if(src == "images/plus.png"){
 		svg.style.transform = "scale("+scale+")";
 		svg.style.transformOrigin  = "top left";
-		svg.style.height  = styles.task_height * scale + "px";
 	//zoom in
 	}else{
 		svg.style.transform = "scale(1)";
-		svg.style.height  = styles.task_height + "px";
 	}
 }
 
@@ -317,13 +312,13 @@ function createContent(tasks, mode){
 
 	//get needed width and height or a bit more
 	var width = 30 + (tasks[0].length + (tasks[0].length*tasks[0][0][0].length))*22;
-	styles.task_height = tasks.length * tasks[0][0].length * 90;
+	var height = tasks.length * tasks[0][0].length * 90;
 	// create the svg element
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	// set width and height
 	svg.setAttribute("id", "content");
 	svg.setAttribute("width", width);
-	svg.setAttribute("height", styles.task_height);
+	svg.setAttribute("height", height);
 
 	if(tasks[0].length == 8) margin = 50; else margin = 20;
 	for(var i=0; i<tasks.length; i++){ //Tasks/Nodes
