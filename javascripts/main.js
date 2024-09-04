@@ -426,7 +426,7 @@ function hex2Bin(hex){
 		for(let thread=0; thread<options["threads_per_core"];thread++){
 			for(let socket=0; socket<options["sockets"]; socket++){
 				for(let core=0; core<options["cores"]; core++){
-					if(bin[bit] === '1') tasks[i][socket][thread][core] = '0';
+					if(bin[bit] === '1') tasks[i][socket][thread][core] = i.toString();
 					bit++;
 				}
 			}
