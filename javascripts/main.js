@@ -208,7 +208,7 @@ function getOptions() {
 	options["supercomputer"] = document.getElementById('supercomputer').value;
 	options["sockets"] = supercomputer_attributes[options["supercomputer"]]['sockets']; 
 	options["cores"] = supercomputer_attributes[options["supercomputer"]]['cores']; 
-	options["threads_per_cores"] = supercomputer_attributes[options["supercomputer"]]['task_per_cores']; 
+	options["threads"] = supercomputer_attributes[options["supercomputer"]]['threads']; 
 
 	//Get all parameter for tasks
 	options["task"] = parseInt(document.getElementById('task').value); 
@@ -407,8 +407,8 @@ function hex2Bin(hex){
 	for (let h=0; h < hex.length; h++){
 		tasks[h] = new Array(options["sockets"]);
 		for(let socket=0; socket<options["sockets"]; socket++){
-			let array_for_task = new Array(options["threads_per_core"]);
-			for(let thread=0; thread<document.getElementById("threads_per_core").max;thread++){
+			let array_for_task = new Array(options["threads"]);
+			for(let thread=0; thread<options["threads"];thread++){
 				array_for_task[thread] = new Array(options["cores"]);
 			}
 			tasks[h][socket] = array_for_task;
@@ -416,14 +416,14 @@ function hex2Bin(hex){
 	}
 
 	//hex to bin
-	let all_cores = options["sockets"]*options["cores"]*options["threads_per_core"];
+	let all_cores = options["sockets"]*options["cores"]*options["threads"];
 	let sub = "0".repeat(all_cores);
 	for (let i = 0; i < hex.length; i++) {
 		let dezi = BigInt(hex[i]);
 		let bin = ((sub + dezi.toString(2)).split("").reverse().join("")).substring(0,all_cores);
 		//Fill Task Array
 		let bit = 0;
-		for(let thread=0; thread<options["threads_per_core"];thread++){
+		for(let thread=0; thread<options["threads"];thread++){
 			for(let socket=0; socket<options["sockets"]; socket++){
 				for(let core=0; core<options["cores"]; core++){
 					if(bin[bit] === '1') tasks[i][socket][thread][core] = i.toString();
