@@ -12,19 +12,19 @@ import { Rank } from './Rank.js';
 				"socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"]};
 
 let supercomputer_attributes = {
-	"juwels": {"sockets": 2, "cores": 24, "threads": 2, "gpus": [],
+	"jw": {"sockets": 2, "cores": 24, "threads": 2, "gpus": [],
 	  		"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
-	"juwels-gpu": {"sockets": 2, "cores": 20, "threads": 2, "gpus": [],
+	"jwg": {"sockets": 2, "cores": 20, "threads": 2, "gpus": [],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
-	"juwels-booster" : {"sockets": 8, "cores": 6, "threads": 2,"gpus": [3,1,7,5],
+	"jwb" : {"sockets": 8, "cores": 6, "threads": 2,"gpus": [3,1,7,5],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
-	"jureca-dc": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
+	"jr": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"}, 
-	"jureca-gpu": {"sockets": 8, "cores": 16, "threads": 2,"gpus": [3,1,7,5],
+	"jrg": {"sockets": 8, "cores": 16, "threads": 2,"gpus": [3,1,7,5],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
-	"jusuf": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
+	"js": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"}, 
-	"jusuf-gpu": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [3],
+	"jsg": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [3],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"}};
 
 window.addEventListener("DOMContentLoaded", () => {
