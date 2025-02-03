@@ -54,6 +54,10 @@ input {
 	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2);
 }
 
+hr {
+	border-color: #023d6b;
+}
+
 select {
 	width: 39%;
 	float: right;
@@ -62,6 +66,7 @@ select {
 
 .two-column {
 	float: left;
+	height: 100%;
 }
 
 #selection {
@@ -108,7 +113,7 @@ select {
 	border-style: solid;
 	margin: 0px auto;
 	margin-bottom: 0px;
-	display: none;
+	display: block;
 	padding: 5px;
 	font-family: "Fira Code", "Courier New", monospace;
 	overflow: auto;
@@ -120,6 +125,13 @@ select {
 	float: right;
 	height: 1em;
 	margin-right: 5px;
+}
+
+.output {
+	width: 100%;
+	height: calc(50% - 15px);
+	overflow: scroll;
+	margin: 10px;
 }
 
 #output {
@@ -144,11 +156,13 @@ select {
 #warning {
 	margin: 0px auto;
 	display: table;
-	margin-top: 20%;
 	background-color: white;
 	border: 1px solid rgba(0, 0, 0, 0.2);
 	padding: 10px;
 	box-shadow: 0 2px 1px 0 rgba(0, 0, 0, 0.2);
+	position: relative;
+  	top: 50%;
+ 	transform: translateY(-50%);
 }
 
 table {

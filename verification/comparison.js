@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { Validator } from '../webtool/javascripts/Validator.js';
+import { Validator } from './Validator.js';
 import {getOptions, createTasksFromFile, getCalcPinning} from './main.js';
 
 let data = {
@@ -68,7 +68,7 @@ function isDifferent(real_pinning, calc_pinning, options) {
 	let outer_level = (options["mode"] === "node") ? options["nodes"] : options["task"];
 	for(let i=0; i<outer_level; i++) {
 		for(let j=0; j<options["sockets"]; j++) {
-			for(let k=0; k<options["max_threads"]; k++) {
+			for(let k=0; k<options["threads"]; k++) {
 				for(let l=0; l<options["cores"]; l++) {
 					if (real_pinning[i][j][k][l] !== calc_pinning[i][j][k][l]) return true;
 				}

@@ -1,6 +1,7 @@
 stages:
   - generate_files
   - compare
+  - deploy
 
 generate_files_jusuf:
   id_tokens:
@@ -25,9 +26,31 @@ compare_pinning:
   tags: 
     - public-docker
   script: 
-    - cd verification
+    - cd webtool/javascripts/
+    - mv $(ls | grep -v main.js) ../../verification/
+    - cd ../../verification/
     - node comparison.js pin_logs/
+  allow_failure: true
   artifacts:
+    when: always
     paths: 
       - verification/results.json
+    expire_in: "1 hour"
+
+pages:
+  stage: deploy
+  script:
+    - mkdir public/
+    - mkdir public/javascripts/
+    - mv verification/results.json public/results.json
+    - mv verification/pin_logs/ public/pin_logs/
+    - mv verification/index.html public/index.html
+    - mv verification/main.js public/javascripts/main.js
+    - mv webtool/images/ public/images/
+    - mv webtool/stylesheets/ public/stylesheets/
+    - cd webtool/javascripts/
+    - mv $(ls | grep -v main.js) ../../public/javascripts/
+  artifacts:
+    paths:
+      - public/
     expire_in: "1 hour"

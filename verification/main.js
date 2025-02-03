@@ -1,7 +1,12 @@
-import { Cores } from '../webtool/javascripts/Cores.js';
-import { Rank } from '../webtool/javascripts/Rank.js';
-import { Rank_Ldom } from '../webtool/javascripts/Rank_Ldom.js';
-import { Threads } from '../webtool/javascripts/Threads.js';
+import { Validator } from './Validator.js';
+import { Cores } from './Cores.js';
+import { Rank } from './Rank.js';
+import { Rank_Ldom } from './Rank_Ldom.js';
+import { Threads } from './Threads.js';
+
+let styles =   {"colors": ["#7393dd", "#ff8200", "#0064b5", "#80c6ff", "#00467f",
+							"#b35b00", "#290aa3", "#ffc180" , "#1d0772"],
+				"socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"]};
 
 let supercomputer_attributes = {
 	"jw": {"sockets": 2, "cores": 24, "threads": 2, "gpus": [],
@@ -18,6 +23,379 @@ let supercomputer_attributes = {
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"}, 
 	"jsg": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [3],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"}};
+
+if (typeof window !== "undefined") {
+	window.addEventListener("DOMContentLoaded", async () => {
+		let data = await fetch('results.json')
+		.then(res => {return res.json();})
+		.then(json => {return json;})
+		.catch(err => {return {
+			equal: new Array(),
+			unequal: new Array(),
+			unknown: new Array()
+		}});
+		getAndCompleteURL(data)
+
+		//Event Handler
+		document.getElementById("modus").addEventListener("change", function() {changeFiles(this.value, document.getElementById("category").value, data); generateForm();});
+		document.getElementById("category").addEventListener("change", function() {changeFiles(document.getElementById("modus").value, this.value, data); generateForm();});
+		document.getElementById("file").addEventListener("change", function() {generateForm();});
+		document.getElementById("zoom").addEventListener("click", function() {switchZoom(this.getAttribute("src"));});
+		document.getElementById("output_calc").addEventListener("scroll", function() {syncScroll(this, document.getElementById('output_real'));});
+		document.getElementById("output_real").addEventListener("scroll", function() {syncScroll(this, document.getElementById('output_calc'));});
+	})
+}
+
+/**
+* Click-Event to zoom in/out
+*/
+function switchZoom(src){
+	let svg_calc = document.getElementById('calc_content');
+	if (svg_calc) {
+		let div_width = document.getElementById('output_calc').clientWidth;
+		let svg_width = svg_calc.clientWidth;
+		let scale = div_width/svg_width -0.01;
+		//zoom out
+		if(src === "images/minus.png"){
+			document.getElementById('zoom').setAttribute("src", "images/plus.png");
+			svg_calc.style.transform = "scale("+scale+")";
+			svg_calc.style.transformOrigin  = "top left";
+		//zoom in
+		}else{
+			document.getElementById('zoom').setAttribute("src", "images/minus.png");
+			svg_calc.style.transform = "scale(1)";
+		}
+	}
+	let svg_real = document.getElementById('real_content');
+	if (svg_real) {
+		let div_width = document.getElementById('output_real').clientWidth;
+		let svg_width = svg_real.clientWidth;
+		let scale = div_width/svg_width -0.01;
+		//zoom out
+		if(src === "images/minus.png"){
+			document.getElementById('zoom').setAttribute("src", "images/plus.png");
+			svg_real.style.transform = "scale("+scale+")";
+			svg_real.style.transformOrigin  = "top left";
+		//zoom in
+		}else{
+			document.getElementById('zoom').setAttribute("src", "images/minus.png");
+			svg_real.style.transform = "scale(1)";
+		}
+	}
+}
+
+/**
+ * Synchronize scrollbars for real and calculated output
+ */
+function syncScroll(div1, div2) {
+    div2.scrollTop = div1.scrollTop;
+	div2.scrollLeft = div1.scrollLeft;
+}
+
+/**
+ * Onchange-Event to set affinity-link for choosen system
+ */	
+function setAffinityLink(supercomputer){
+	let link = document.getElementById('affinity');
+	link.href = supercomputer_attributes[supercomputer].affinity;
+}
+
+/**
+ * Read out URL parameter to get selected options and 
+ * completes URL with missing parameters
+ */
+function getAndCompleteURL(data){
+	//read out parameters
+    const help_parameters = (window.location.search.slice(1)).split('&');
+	
+	let parameters = {};
+	for (var i = 0; i<help_parameters.length; i++){
+		var key = help_parameters[i].split('=')[0]
+		var value = help_parameters[i].split('=')[1]
+		parameters[key] = value;
+	}
+	const keys = ["modus", "category", "file"]
+
+	//set selects and inputs
+	for (let key of keys){
+		if (key === "file") changeFiles(document.getElementById("modus").value, document.getElementById("category").value, data);
+		if (key in parameters) {
+			var input = document.getElementById(key);
+			let values = Array.from(input.options).map(option => option.value);
+			if (values.length === 0 || values.includes(value)) 
+				input.value = value;
+		}
+	}
+	generateForm();
+	setURL()
+}
+
+/**
+ * Set URL parameter to selected options
+ */
+function setURL(){
+	//create all options in URL
+	//get all input and select elements
+	var selects = document.getElementsByTagName('select')
+	const url = new URL(window.location);
+	for (var i=0; i<selects.length; i++) {
+		url.searchParams.set(selects[i].id, selects[i].value.toLowerCase());
+	}
+	window.history.replaceState({}, '', url);
+}
+
+/**
+* Create command from configuration
+*/
+function createCommand(options){
+	//create command line
+	var command = document.getElementById('command');
+	command.innerHTML = "";
+	var p = document.createElement('code');
+	p.innerHTML = '-N ' + options["nodes"] + ' -n ' + options["task"] + ' -c ' + options["cpu_per_task"] + ' --cpu-bind=' + options["cpu_bind"] + 
+				 ' --distribution=' + options["distribution_node"] + ':' + options["distribution_socket"] + ':' + options["distribution_core"] +
+				 ' --threads-per-core=' + options["threads_per_core"];
+	
+	p.style.textAlign = "center";
+	command.appendChild(p);
+}
+
+/*
+* Change-Event to create pinning with given options
+*/
+async function generateForm() {
+	setURL()
+	let file = document.getElementById('file').value
+	if (file === "") {
+		document.getElementById('affinity').removeAttribute("href")
+		document.getElementById('command').innerHTML = "";
+		document.getElementById("difference").innerHTML = "";
+		let output_calc = document.getElementById('output_calc');
+		let output_real = document.getElementById('output_real');
+		output_calc.innerHTML = '<div id="warning"><i class="fa fa-cog fa-spin"></i> There are no files for these options</div>';
+		output_real.style.height = "0%"
+		output_calc.style.height = "100%"
+		return
+	}
+	let options = getOptions(file);
+
+	setAffinityLink(options["supercomputer"])
+	createCommand(options);
+
+    let real_tasks = await fetch("pin_logs/"+file)
+	.then((res) => {
+		if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+		return res.text();
+	})
+	.then((text) => {
+		let file_array = text.split("\n")
+		for(let i = 0; i < file_array.length-1; i++) {
+			file_array[i] = file_array[i].trim().split(/\s+/);
+		}
+		let tasks = createTasksFromFile(file_array, options);
+		return tasks;
+	})
+	.catch((e) => {return undefined;})
+
+	let calc_tasks = undefined;
+	let validator = new Validator(options)
+	if (validator.isValidDistribution()) {
+		calc_tasks = getCalcPinning(options)
+	}
+	createOutput(real_tasks, calc_tasks, options);
+}
+
+/**
+ * Create calculated output und real output
+ */
+function createOutput(real_tasks, calc_tasks, options) {
+	let outer_level = (options["mode"] == "node") ? options["nodes"] : options["task"];
+	
+	//find differences
+	let diff = new Array(outer_level);
+	for(let outer=0; outer<outer_level; outer++){ 
+		diff[outer] = new Array(options["sockets"]);
+		for(let socket=0; socket<options["sockets"]; socket++){
+			let array_for_diff = new Array(options["threads"]);
+			for(let thread=0; thread<options["threads"];thread++){
+				array_for_diff[thread] = new Array(options["cores"]);
+			}
+			diff[outer][socket] = array_for_diff;
+		}
+	}
+
+	document.getElementById("difference").innerHTML = "";
+	if (calc_tasks) {
+		let diff_count = 0;
+		for(let i=0; i<diff.length; i++) {
+			for(let j=0; j<diff[i].length; j++) {
+				for(let k=0; k<diff[i][j].length; k++) {
+					for(let l=0; l<diff[i][j][k].length; l++) {
+						if (real_tasks[i][j][k][l] != calc_tasks[i][j][k][l])
+							diff_count++;
+						diff[i][j][k][l] = (real_tasks != undefined && real_tasks[i][j][k][l] != calc_tasks[i][j][k][l]);
+					}
+				}
+			}
+		}
+		document.getElementById("difference").innerHTML = diff_count + " Difference(s)";
+		if (diff_count > 0) document.getElementById("difference").style.color = "#eb5f73"
+		else document.getElementById("difference").style.color = "black"
+	}
+	
+
+	//Create svg files
+	let output_calc = document.getElementById('output_calc');
+	let output_real = document.getElementById('output_real');
+
+	if(calc_tasks) {
+		output_real.style.height = "calc(50% - 15px)"
+		output_calc.style.height = "calc(50% - 15px)"
+		createContent(calc_tasks, diff, options, true);
+		createContent(real_tasks, diff, options, false);
+	} else {
+		output_calc.style.height = "20px"
+		output_real.style.height = "calc(100% - 50px)"
+		createContent(real_tasks, diff, options, false);
+		output_calc.innerHTML = "There is no rule-based version for these options!"
+	}
+}
+
+/**
+* Create svg file to create pinning-content
+*/
+function createContent(tasks, diff, options, rule_based){
+	let output = (rule_based) ? document.getElementById('output_calc') : document.getElementById('output_real');
+	output.innerHTML = "";
+
+	//get needed width and height or a bit more
+	let width = 30 + (tasks[0].length + (tasks[0].length*tasks[0][0][0].length))*22;
+	let height = tasks.length * tasks[0][0].length * 90;
+	// create the svg element
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	// set width and height
+	if (rule_based) svg.setAttribute("id", "calc_content"); else svg.setAttribute("id", "real_content");
+	svg.setAttribute("width", width);
+	svg.setAttribute("height", height);
+	//create pinning-mask
+	let margin = (tasks[0].length === 8) ? 50: 20;
+	const title = document.createElementNS("http://www.w3.org/2000/svg", "text");
+	title.setAttribute("x", "10");
+	title.setAttribute("y", "20");
+	title.setAttribute("fill", "#023d6b");
+	title.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+	title.setAttribute("font-weight", "bold");
+	title.textContent = (rule_based) ? 'RULE-BASED:' : 'REAL SITUATION:'
+	svg.appendChild(title);
+	for(let i=0; i<tasks.length; i++){ //Tasks/Nodes
+		const headline = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		headline.setAttribute("x", "10");
+		headline.setAttribute("y", margin + i*(tasks[i][0].length+2)*22);
+		headline.setAttribute("fill", "#023d6b");
+		headline.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+		headline.textContent = (options["mode"] === "task") ? "Task" : "Node";
+		headline.textContent += i+':';
+		svg.appendChild(headline);
+
+		for(let j=0; j<tasks[i].length; j++){ //Sockets
+			for(let k=0; k<tasks[i][j].length; k++){ //Threads
+				for(let l=0; l<tasks[i][j][k].length; l++){ //Kerne
+					const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+					core.setAttribute("x", 30 + j*(tasks[i][j][k].length+1)*22 + l*22);
+					core.setAttribute("y", margin + 10 + i*(tasks[i][j].length+2)*22 + k*22);
+					core.setAttribute("width", "20");
+					core.setAttribute("height", "20");
+					if(diff[i][j][k][l]) {
+						core.setAttribute("stroke-width", "3");
+						core.setAttribute("stroke", "#ff0000");
+					}
+
+					const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
+					let xoffset, yoffset, fontsize;
+					if (tasks[i][j][k][l]>99) {
+						xoffset = 6;
+						yoffset = 1;
+						fontsize = "0.7em";
+					} else if (tasks[i][j][k][l]>9) {
+						xoffset = 4;
+						yoffset = 1;
+						fontsize = "0.9em";
+					} else {
+						xoffset = 0;
+						yoffset = 0;
+						fontsize = "1.0em";
+					}
+					pin.setAttribute("x", 36 - xoffset + j*(tasks[i][j][k].length+1)*22 + l*22);
+					pin.setAttribute("y", margin + 25 - yoffset + i*(tasks[i][j].length+2)*22 + k*22);
+					pin.setAttribute("width", "30");
+					pin.setAttribute("height", "30");
+					pin.setAttribute("font-size", fontsize);
+
+					if(tasks[i][j][k][l] !== undefined){
+						pin.textContent = tasks[i][j][k][l];
+						core.setAttribute("fill", styles.colors[parseInt(tasks[i][j][k][l])%9]);
+						pin.setAttribute("fill", 'white');
+					}else{
+						if(tasks[i].length === 8){
+							core.setAttribute("fill", styles.socket_color[parseInt(j/4)]);
+						}else{
+							core.setAttribute("fill", styles.socket_color[j]);
+						}
+						pin.setAttribute("fill", '#023d6b');
+						pin.textContent = 'x';
+					}
+
+					svg.appendChild(core);
+					svg.appendChild(pin);
+				}
+			}
+		}
+	}
+
+	// add gpu
+	let gpus = supercomputer_attributes[options["supercomputer"]]['gpus'];
+	for(let i=0; i<gpus.length; i++){
+		const gpuheadline = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		gpuheadline.setAttribute("x", 35 + gpus[i]*(tasks[0][0][0].length+1)*22);
+		gpuheadline.setAttribute("y", 20);
+		gpuheadline.setAttribute("fill", "#023d6b");
+		gpuheadline.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+		gpuheadline.setAttribute("font-weight", "bold");
+		gpuheadline.textContent = 'Direct connection';
+		svg.appendChild(gpuheadline);
+		const gpuheadline2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		gpuheadline2.setAttribute("x", 65 + gpus[i]*(tasks[0][0][0].length+1)*22);
+		gpuheadline2.setAttribute("y", 40);
+		gpuheadline2.setAttribute("fill", "#023d6b");
+		gpuheadline2.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+		gpuheadline2.setAttribute("font-weight", "bold");
+		gpuheadline2.textContent = 'to GPU '+i;
+		svg.appendChild(gpuheadline2);
+		const gpurect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		gpurect.setAttribute("x", 25 + gpus[i]*(tasks[0][0][0].length+1)*22);
+		gpurect.setAttribute("y", margin);
+		gpurect.setAttribute("width", tasks[0][0][0].length*22 +8);
+		gpurect.setAttribute("height", tasks.length * 60 + (tasks.length-1)* 28);
+		gpurect.setAttribute("fill", "none");
+		gpurect.setAttribute("stroke", "#023d6b");
+		gpurect.setAttribute("stroke-width", "2");
+		svg.appendChild(gpurect);
+	}
+	
+	//keep zoom
+	let src = document.getElementById('zoom').getAttribute("src");
+	let div_width = output.clientWidth;
+	let scale = div_width/width -0.01;
+	if(src === "images/plus.png"){
+		svg.style.transform = "scale("+scale+")";
+		svg.style.transformOrigin  = "top left";
+	}else{
+		svg.style.transform = "scale(1)";
+	}
+
+	// attach container to document
+	output.appendChild(svg);
+}
 
 /**
 * Get used options for the (selected) file
@@ -38,7 +416,10 @@ export function getOptions(file) {
 	options["distribution_node"] = testcase[6];
 	options["distribution_socket"] = testcase[7];
 	options["distribution_core"] = testcase[8];
-	options["mode"] = (options["nodes"] === 1) ? "task" : "node";
+	if (typeof window === "undefined")
+		options["mode"] = (options["nodes"] === 1) ? "task" : "node";
+	else
+		options["mode"] = document.getElementById("modus").value;
 
 	return options;
 }
@@ -107,4 +488,25 @@ export function getCalcPinning(options) {
 			break;
 	}
 	return CPU_Bind.getPinning();
+}
+
+/**
+ * Display all the files that are relevant for the current modus and category
+ */
+function changeFiles(modus, category, data) {
+	const select = document.getElementById("file")
+
+	let options = select.getElementsByTagName("option")
+	while (options.length > 0) {
+		options[0].remove()
+	}
+  
+	const items = (modus == "node") ? data[category] : data[category].filter(item => item.split("-")[1] === "1");
+	for (let item of items) {
+		let optgroup = document.getElementById(item.split("-")[0]);
+		const option = document.createElement("option");
+		option.value = item;
+		option.text = item; 
+		optgroup.appendChild(option);
+	}
 }

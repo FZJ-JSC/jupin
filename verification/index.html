@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Pinning-Verification-Tool</title>
+		<!-- load Scripts -->
+		<script src="javascripts/main.js" type="module"></script>
+		<script src="javascripts/CPU_Bind.js" type="module"></script>
+		<script src="javascripts/Threads.js" type="module"></script>
+		<script src="javascripts/Cores.js" type="module"></script>
+		<script src="javascripts/Rank.js" type="module"></script>
+		<script src="javascripts/Rank_Ldom.js" type="module"></script>
+		<script src="javascripts/Validator.js" type="module"></script>
+		<!-- link Stylesheet -->
+		<link rel="stylesheet" href="stylesheets/style.css">
+		<link rel="stylesheet" href="stylesheets/font-awesome/css/font-awesome.min.css">
+	</head>
+	<body>
+		<header>	
+			<a href="index.html"><p>Pinning-Verification-Tool</p></a>
+		</header>
+		<main>
+			<div id ="selection" class="two-column">
+				<form>
+					<span title='Choose between the Node-Mode and the Task-Mode. In the Node-Mode you can visualize the pinning amongst multiple nodes. In Task-Mode the pinning for a single node is visualized by showing each task individually.'><i class='fa fa-info-circle'></i></span>
+					<label for="modus"> Mode: </label>
+					<select id="modus">
+						<option selected value="task">Task</option>
+						<option value="node">Node</option>
+					</select>
+
+					<br><br><br>
+
+					<span title='Choose between the categories "equal pinning", "unequal pinning" and "pinning is not implemented".'><i class='fa fa-info-circle'></i></span>
+					<label for="category"> Category: </label>
+					<select id="category">
+						<option value="equal">equal</option>
+						<option selected value="unequal">unequal</option>
+						<option value="unknown">not implemented</option>
+					</select>
+
+					<br><br><br>
+
+					<span title='Choose a file for that the comparison should be displayed".'><i class='fa fa-info-circle'></i></span>
+					<label for="file"> File: </label>
+					<select id="file">
+						<optgroup id="jw" label="JUWELS"></optgroup>
+						<optgroup id="jwg" label="JUWELS-GPU"></optgroup>
+						<optgroup id="jwb" label="JUWELS-Booster"></optgroup>
+						<optgroup id="jr" label="JURECA"></optgroup>
+						<optgroup id="jrg" label="JURECA-GPU"></optgroup>
+						<optgroup id="js" label="JUSUF"></optgroup>
+						<optgroup id="jsg" label="JUSUF-GPU"></optgroup>
+					</select>
+
+					<br><br><br>
+
+					<p> Slurm-Options: </p>
+					<div id='command'></div>
+
+					<p id="difference"></p>
+				</form>
+
+				<img id="zoom" src="images/minus.png" alt="zoom" title="Zoom in or out">
+			</div>
+			<div id="output_container" class="two-column" style="width: 80%;">
+				<div id="output_calc" class="output"></div>
+				<hr>
+				<div id="output_real" class="output"></div>
+			</div>
+		</main>
+		<footer>
+			<a id='affinity'>Affinity</a>
+			<a href="https://www.fz-juelich.de/en/legal-notice">Legal Notice</a>
+			<a href="https://www.fz-juelich.de/en/privacy-policy">Data protection</a>
+		</footer>
+	</body>
+</html> 
