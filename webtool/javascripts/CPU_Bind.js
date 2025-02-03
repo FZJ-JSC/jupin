@@ -1,4 +1,4 @@
-class CPU_Bind {
+export class CPU_Bind {
 	constructor(options){
 		this._options = options;
 		if(this._options["sockets"] === 8){
@@ -35,8 +35,8 @@ class CPU_Bind {
 		for(let outer=0; outer<outer_level; outer++){ 
 			tasks[outer] = new Array(this._options["sockets"]);
 			for(let socket=0; socket<this._options["sockets"]; socket++){
-				let array_for_task = new Array(document.getElementById("threads_per_core").max);
-				for(let thread=0; thread<document.getElementById("threads_per_core").max;thread++){
+				let array_for_task = new Array(this._options["threads"]);
+				for(let thread=0; thread<this._options["threads"];thread++){
 					array_for_task[thread] = new Array(this._options["cores"]);
 				}
 				tasks[outer][socket] = array_for_task;

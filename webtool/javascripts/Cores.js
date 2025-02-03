@@ -1,4 +1,6 @@
-class Cores extends CPU_Bind{
+import { CPU_Bind } from './CPU_Bind.js';
+
+export class Cores extends CPU_Bind{
 	getCoreToBind(tasks, node, task_number, cpu){
 		let shift = parseInt(task_number/this._options["sockets"]);
 		
@@ -44,8 +46,8 @@ class Cores extends CPU_Bind{
 			
 		// Distribution Socket Cyclic
 		}else if(this._options["distribution_socket"] === 'cyclic'){
-			socket = this._socket_arr[task_number%this._options["sockets"]] + 
-					parseInt(((parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"])+cpu)/(this._options["cores"]*this._options["threads_per_core"]))%this._options["sockets"];
+			socket = this._socket_arr[(task_number + 
+				parseInt(((parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"])+cpu)/(this._options["cores"]*this._options["threads_per_core"])))%this._options["sockets"]];
 			if(this._options["threads_per_core"]!== 1){
 				switch(this._options["distribution_core"]){
 					case('block'):
@@ -64,7 +66,7 @@ class Cores extends CPU_Bind{
 				}
 			}else{
 				core = (parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"]+cpu)%this._options["cores"];
-				socket = socket + parseInt(((parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"])+cpu)/(this._options["cores"]))%this._options["sockets"];
+				socket = (socket + parseInt(((parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"])+cpu)/(this._options["cores"])))%this._options["sockets"];
 				thread = 0;
 			}
 		// Distribution Socket Fcyclic

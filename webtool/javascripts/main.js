@@ -1,3 +1,9 @@
+import { Validator } from './Validator.js';
+import { Cores } from './Cores.js';
+import { Rank_Ldom } from './Rank_Ldom.js';
+import { Threads } from './Threads.js';
+import { Rank } from './Rank.js';
+
 /*
  *Configuratons
  */
@@ -264,7 +270,7 @@ function generateForm() {
 			CPU_Bind = new Cores(options); 
 			break;
 	}
-	tasks = CPU_Bind.getPinning();
+	let tasks = CPU_Bind.getPinning();
 	createContent(tasks, options["mode"]);
 }
 
@@ -286,7 +292,7 @@ function createContent(tasks, mode){
 	svg.setAttribute("width", width);
 	svg.setAttribute("height", height);
 	//create pinning-mask
-	if(tasks[0].length === 8) margin = 50; else margin = 20;
+	let margin = (tasks[0].length === 8) ? 50 : 20;
 	for(let i=0; i<tasks.length; i++){ //Tasks/Nodes
 		const headline = document.createElementNS("http://www.w3.org/2000/svg", "text");
 		headline.setAttribute("x", "10");
@@ -307,6 +313,7 @@ function createContent(tasks, mode){
 					core.setAttribute("height", "20");
 
 					const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
+					let xoffset,yoffset,fontsize;
 					if (tasks[i][j][k][l]>99) {
 						xoffset = 6;
 						yoffset = 1;

@@ -1,4 +1,6 @@
-class Threads extends CPU_Bind{
+import { CPU_Bind } from './CPU_Bind.js';
+
+export class Threads extends CPU_Bind{
 	getCoreToBind(tasks, node, task_number, cpu){
 		let shift = parseInt(task_number/this._options["sockets"]);
 		let current = task_number*this._options["cpu_per_task"]+cpu;

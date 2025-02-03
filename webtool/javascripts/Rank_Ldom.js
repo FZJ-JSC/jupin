@@ -1,4 +1,6 @@
-class Rank_Ldom extends CPU_Bind{
+import { CPU_Bind } from './CPU_Bind.js';
+
+export class Rank_Ldom extends CPU_Bind{
 	getCoreToBind(tasks, node, task_number, cpu){
 		let tasks_in_node = Math.floor(this._options["task"]/this._options["nodes"]);
 		tasks_in_node += (node < this._options["task"]%this._options["nodes"]) ? 1 : 0;

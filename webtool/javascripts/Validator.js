@@ -1,4 +1,4 @@
-class Validator {
+export class Validator {
 	constructor(options){
 		this._options = options;
 		this._available_cores = this._options["sockets"]*this._options["cores"]*this._options["nodes"] * this._options["threads_per_core"];

@@ -1,4 +1,6 @@
-class Rank extends CPU_Bind{
+import { CPU_Bind } from './CPU_Bind.js';
+
+export class Rank extends CPU_Bind{
 	getCoreToBind(tasks, node, task_number, cpu){ 
 		let current = task_number*this._options["cpu_per_task"]+cpu;
 		let tasks_in_node = Math.floor(this._options["task"]/this._options["nodes"]);
