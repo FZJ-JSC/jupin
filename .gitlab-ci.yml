@@ -1,5 +1,6 @@
 stages:
   - generate_files
+  - compare
 
 generate_files_jusuf:
   id_tokens:
@@ -16,4 +17,17 @@ generate_files_jusuf:
   artifacts:
     paths: 
       - verification/pin_logs/
+    expire_in: "1 hour"
+
+compare_pinning:
+  stage: compare
+  image: node:latest
+  tags: 
+    - public-docker
+  script: 
+    - cd verification
+    - node comparison.js pin_logs/
+  artifacts:
+    paths: 
+      - verification/results.json
     expire_in: "1 hour"
