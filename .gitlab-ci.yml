@@ -1,0 +1,19 @@
+stages:
+  - generate_files
+
+generate_files_jusuf:
+  id_tokens:
+    SITE_ID_TOKEN:
+      aud: "https://gitlab.jsc.fz-juelich.de"
+  stage: generate_files
+  tags:
+    - jusuf
+    - login
+  script:
+    - ml JUBE
+    - cd verification/
+    - jube-autorun -r "-t js gp cb_all cd_all" all_hello_reduced.xml
+  artifacts:
+    paths: 
+      - verification/pin_logs/
+    expire_in: "1 hour"
