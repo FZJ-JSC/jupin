@@ -2,6 +2,7 @@ stages:
   - generate_files
   - compare
   - deploy
+  - result
 
 generate_files_jusuf:
   id_tokens:
@@ -29,12 +30,11 @@ compare_pinning:
     - cd webtool/javascripts/
     - mv $(ls | grep -v main.js) ../../verification/
     - cd ../../verification/
-    - node comparison.js pin_logs/
-  allow_failure: true
+    - node comparison.js pin_logs/ || echo $? > exit_code.txt
   artifacts:
-    when: always
     paths: 
       - verification/results.json
+      - verification/exit_code.txt
     expire_in: "1 hour"
 
 pages:
@@ -54,3 +54,14 @@ pages:
     paths:
       - public/
     expire_in: "1 hour"
+  
+check:
+  stage: result
+  dependencies:
+    - compare_pinning
+  script:
+    - exit_code=$(cat verification/exit_code.txt)
+    - if [ "$exit_code" -ne 0 ]; then
+        echo "Errors occurred during the comparison.";
+        exit 1;
+      fi
