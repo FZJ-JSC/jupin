@@ -1,31 +1,5 @@
 import { Validator } from './Validator.js';
-import { Cores } from './Cores.js';
-import { Rank } from './Rank.js';
-import { Rank_Ldom } from './Rank_Ldom.js';
-import { Threads } from './Threads.js';
-
-/**
- *Configurations
- */
-let styles =   {"colors": ["#7393dd", "#ff8200", "#0064b5", "#80c6ff", "#00467f",
-							"#b35b00", "#290aa3", "#ffc180" , "#1d0772"],
-				"socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"]};
-
-let supercomputer_attributes = {
-	"jw": {"sockets": 2, "cores": 24, "threads": 2, "gpus": [],
-	  		"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
-	"jwg": {"sockets": 2, "cores": 20, "threads": 2, "gpus": [],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
-	"jwb" : {"sockets": 8, "cores": 6, "threads": 2,"gpus": [3,1,7,5],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
-	"jr": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
-	"jrg": {"sockets": 8, "cores": 16, "threads": 2,"gpus": [3,1,7,5],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
-	"js": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"},
-	"jsg": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [3],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"}};
+import * as utils from './utils.js';
 
 if (typeof window !== "undefined") {
 	window.addEventListener("DOMContentLoaded", async () => {
@@ -49,7 +23,8 @@ if (typeof window !== "undefined") {
 		});
 		document.getElementById("file").addEventListener("change", function() {generateForm();});
 		document.getElementById("zoom").addEventListener("click", function() {
-			switchZoom(this.getAttribute("src"));
+			utils.switchZoom(this.getAttribute("src"), document.getElementById('calc_content'), document.getElementById('output_calc'),false);
+			utils.switchZoom(this.getAttribute("src"), document.getElementById('real_content'), document.getElementById('output_real'));
 		});
 		document.getElementById("output_calc").addEventListener("scroll", function() {
 			syncScroll(this, document.getElementById('output_real'));
@@ -61,59 +36,11 @@ if (typeof window !== "undefined") {
 }
 
 /**
- * Zooms in/out on the visualization of the pinning
- */
-function switchZoom(src){
-	// zooms in/out on the visualization of the calculated pinning
-	let svg_calc = document.getElementById('calc_content');
-	if (svg_calc) {
-		let div_width = document.getElementById('output_calc').clientWidth;
-		let svg_width = svg_calc.clientWidth;
-		let scale = div_width/svg_width -0.01;
-		//zoom out
-		if(src === "images/minus.png"){
-			document.getElementById('zoom').setAttribute("src", "images/plus.png");
-			svg_calc.style.transform = "scale("+scale+")";
-			svg_calc.style.transformOrigin  = "top left";
-		//zoom in
-		}else{
-			document.getElementById('zoom').setAttribute("src", "images/minus.png");
-			svg_calc.style.transform = "scale(1)";
-		}
-	}
-	// zooms in/out on the visualization of the real pinning
-	let svg_real = document.getElementById('real_content');
-	if (svg_real) {
-		let div_width = document.getElementById('output_real').clientWidth;
-		let svg_width = svg_real.clientWidth;
-		let scale = div_width/svg_width -0.01;
-		//zoom out
-		if(src === "images/minus.png"){
-			document.getElementById('zoom').setAttribute("src", "images/plus.png");
-			svg_real.style.transform = "scale("+scale+")";
-			svg_real.style.transformOrigin  = "top left";
-		//zoom in
-		}else{
-			document.getElementById('zoom').setAttribute("src", "images/minus.png");
-			svg_real.style.transform = "scale(1)";
-		}
-	}
-}
-
-/**
  * Synchronizes the scrollbars for the real and calculated pinning-visualization
  */
 function syncScroll(div1, div2) {
 	div2.scrollTop = div1.scrollTop;
 	div2.scrollLeft = div1.scrollLeft;
-}
-
-/**
- * Sets the affinity-link for a given system
- */	
-function setAffinityLink(supercomputer){
-	let link = document.getElementById('affinity');
-	link.href = supercomputer_attributes[supercomputer].affinity;
 }
 
 /**
@@ -145,39 +72,11 @@ function getAndCompleteURL(data){
 }
 
 /**
- * Gets the values of all select elements and adds them to the URL
- */
-function setURL(){
-	let selects = document.getElementsByTagName('select');
-	const url = new URL(window.location);
-	for (let i=0; i<selects.length; i++) {
-		url.searchParams.set(selects[i].id, selects[i].value.toLowerCase());
-	}
-	window.history.replaceState({}, '', url);
-}
-
-/**
- * Creates Slurm-compatible command-line options for the choosen pinning-setup
- */
-function createCommand(options){
-	let command = document.getElementById('command');
-	command.innerHTML = "";
-	let p = document.createElement('code');
-	p.innerHTML = '-N ' + options["nodes"] + ' -n ' + options["task"] + ' -c ' + options["cpu_per_task"] +
-				  ' --cpu-bind=' + options["cpu_bind"] + ' --distribution=' + options["distribution_node"] +
-				  ':' + options["distribution_socket"] + ':' + options["distribution_core"] +
-				  ' --threads-per-core=' + options["threads_per_core"];
-
-	p.style.textAlign = "center";
-	command.appendChild(p);
-}
-
-/**
  * Creates the pinning masks for the real and calculated pinning and starts the visualization.
  * Generates a warning if the visualization is not possible.
  */
 async function generateForm() {
-	setURL()
+	utils.setURL()
 	let file = document.getElementById('file').value;
 	//generate a warning, if no file/setup is selected
 	if (file === "") {
@@ -193,8 +92,8 @@ async function generateForm() {
 	}
 	let options = getOptions(file);
 
-	setAffinityLink(options["supercomputer"]);
-	createCommand(options);
+	utils.setAffinityLink(options["supercomputer"]);
+	utils.createCommand(options);
 
 	//create the pinning mask for the real pinning
 	let real_tasks = await fetch("pin_logs/"+file)
@@ -216,7 +115,7 @@ async function generateForm() {
 	let calc_tasks = undefined;
 	let validator = new Validator(options);
 	if (validator.isImplemented()) {
-		calc_tasks = getCalcPinning(options);
+		calc_tasks = utils.getCalcPinning(options);
 	}
 	createOutput(real_tasks, calc_tasks, options);
 }
@@ -356,13 +255,13 @@ function createContent(tasks, diff, options, rule_based){
 
 					if(tasks[i][j][k][l] !== undefined){
 						pin.textContent = tasks[i][j][k][l];
-						core.setAttribute("fill", styles.colors[parseInt(tasks[i][j][k][l])%9]);
+						core.setAttribute("fill", utils.styles.colors[parseInt(tasks[i][j][k][l])%9]);
 						pin.setAttribute("fill", 'white');
 					}else{
 						if(tasks[i].length === 8){
-							core.setAttribute("fill", styles.socket_color[parseInt(j/4)]);
+							core.setAttribute("fill", utils.styles.socket_color[parseInt(j/4)]);
 						}else{
-							core.setAttribute("fill", styles.socket_color[j]);
+							core.setAttribute("fill", utils.styles.socket_color[j]);
 						}
 						pin.setAttribute("fill", '#023d6b');
 						pin.textContent = 'x';
@@ -376,7 +275,7 @@ function createContent(tasks, diff, options, rule_based){
 	}
 
 	// add gpus
-	let gpus = supercomputer_attributes[options["supercomputer"]]['gpus'];
+	let gpus = utils.supercomputer_attributes[options["supercomputer"]]['gpus'];
 	for(let i=0; i<gpus.length; i++){
 		const gpuheadline = document.createElementNS("http://www.w3.org/2000/svg", "text");
 		gpuheadline.setAttribute("x", 35 + gpus[i]*(tasks[0][0][0].length+1)*22);
@@ -408,7 +307,7 @@ function createContent(tasks, diff, options, rule_based){
 	//keep zoom
 	let src = document.getElementById('zoom').getAttribute("src");
 	let div_width = output.clientWidth;
-	let scale = div_width/width -0.01;
+	let scale = div_width/width;
 	if(src === "images/plus.png"){
 		svg.style.transform = "scale("+scale+")";
 		svg.style.transformOrigin  = "top left";
@@ -428,9 +327,9 @@ export function getOptions(file) {
 	let testcase = file.replace(".out","").split("-");
 
 	options["supercomputer"] = testcase[0];
-	options["sockets"] = supercomputer_attributes[options["supercomputer"]]['sockets'];
-	options["cores"] = supercomputer_attributes[options["supercomputer"]]['cores'];
-	options["threads"] = supercomputer_attributes[options["supercomputer"]]['threads'];
+	options["sockets"] = utils.supercomputer_attributes[options["supercomputer"]]['sockets'];
+	options["cores"] = utils.supercomputer_attributes[options["supercomputer"]]['cores'];
+	options["threads"] = utils.supercomputer_attributes[options["supercomputer"]]['threads'];
 	options["nodes"] = parseInt(testcase[1]);
 	options["task"] = parseInt(testcase[2]);
 	options["cpu_per_task"] = parseInt(testcase[3]);
@@ -455,7 +354,7 @@ export function createTasksFromFile(file_array, options) {
 
 	//Create Task Array
 	let tasks = new Array(outer_level);
-	let threads = supercomputer_attributes[options["supercomputer"]]['threads'];
+	let threads = utils.supercomputer_attributes[options["supercomputer"]]['threads'];
 	for(let outer=0; outer<outer_level; outer++){
 		tasks[outer] = new Array(options["sockets"]);
 		for(let socket=0; socket<options["sockets"]; socket++){
@@ -489,28 +388,6 @@ export function createTasksFromFile(file_array, options) {
 		}
 	}
 	return tasks;
-}
-
-/**
- * Generates the pinning mask for the calculated pinning
- */
-export function getCalcPinning(options) {
-	let CPU_Bind;
-	switch(options["cpu_bind"]){
-		case 'rank':
-			CPU_Bind = new Rank(options);
-			break;
-		case 'rank_ldom':
-			CPU_Bind = new Rank_Ldom(options);
-			break;
-		case 'threads':
-			CPU_Bind = new Threads(options);
-			break;
-		case 'cores':
-			CPU_Bind = new Cores(options);
-			break;
-	}
-	return CPU_Bind.getPinning();
 }
 
 /**
