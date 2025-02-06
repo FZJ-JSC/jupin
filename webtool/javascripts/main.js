@@ -63,7 +63,7 @@ function closeAlert(elem){
 function switchZoom(src){
 	let svg = document.getElementById('content');
 	let div_width = document.getElementById('output').clientWidth;
-	let svg_width = document.getElementById('content').clientWidth;
+	let svg_width = svg.clientWidth;
 	let scale = div_width/svg_width -0.01;
 	//zoom out
 	if(src === "images/minus.png"){
@@ -246,8 +246,8 @@ function generateForm() {
 	//Validator
 	let validator = new Validator(options);
 	if(!validator.isValidOptions()){
-		if(options["mode"] === 'task') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high</div>';
-		if(options["mode"] === 'node') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of nodes too low</div>';
+		if(options["mode"] === 'task') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of threads per core too low</div>';
+		if(options["mode"] === 'node') output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of tasks is too high or <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of CPU \'s per task too high <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of nodes too low <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Number of threads per core too low</div>';
 		return;
 	}
 	if(!validator.isValidDistribution()){
@@ -271,13 +271,13 @@ function generateForm() {
 			break;
 	}
 	let tasks = CPU_Bind.getPinning();
-	createContent(tasks, options["mode"]);
+	createContent(tasks, options);
 }
 
 /**
 * Create svg file to create pinning-content
 */
-function createContent(tasks, mode){
+function createContent(tasks, options){
 	//get output div and empty
 	let output = document.getElementById('output');
 	output.innerHTML = "";
@@ -299,7 +299,7 @@ function createContent(tasks, mode){
 		headline.setAttribute("y", margin + i*(tasks[i][0].length+2)*22);
 		headline.setAttribute("fill", "#023d6b");
 		headline.setAttribute("font-family", "Arial, Helvetica, sans-serif");
-		headline.textContent = (mode === "task") ? "Task" : "Node";
+		headline.textContent = (options["mode"] === "node") ? "Node" : "Task";
 		headline.textContent += i+':';
 		svg.appendChild(headline);
 
@@ -355,7 +355,7 @@ function createContent(tasks, mode){
 	}
 
 	// add gpu
-	let gpus = supercomputer_attributes[document.getElementById('supercomputer').value]['gpus'];
+	let gpus = supercomputer_attributes[options["supercomputer"]]['gpus'];
 	for(let i=0; i<gpus.length; i++){
 		const gpuheadline = document.createElementNS("http://www.w3.org/2000/svg", "text");
 		gpuheadline.setAttribute("x", 35 + gpus[i]*(tasks[0][0][0].length+1)*22);
@@ -426,18 +426,24 @@ function hex2Bin(hex){
 	let all_cores = options["sockets"]*options["cores"]*options["threads"];
 	let sub = "0".repeat(all_cores);
 	for (let i = 0; i < hex.length; i++) {
-		let dezi = BigInt(hex[i]);
-		let bin = ((sub + dezi.toString(2)).split("").reverse().join("")).substring(0,all_cores);
-		//Fill Task Array
-		let bit = 0;
-		for(let thread=0; thread<options["threads"];thread++){
-			for(let socket=0; socket<options["sockets"]; socket++){
-				for(let core=0; core<options["cores"]; core++){
-					if(bin[bit] === '1') tasks[i][socket][thread][core] = i.toString();
-					bit++;
+		if (hex[i].match(/^0x[0123456789ABCDEF]+$/i)) {
+			let dezi = BigInt(hex[i]);
+			let bin = ((sub + dezi.toString(2)).split("").reverse().join("")).substring(0,all_cores);
+			//Fill Task Array
+			let bit = 0;
+			for(let thread=0; thread<options["threads"];thread++){
+				for(let socket=0; socket<options["sockets"]; socket++){
+					for(let core=0; core<options["cores"]; core++){
+						if(bin[bit] === '1') tasks[i][socket][thread][core] = i.toString();
+						bit++;
+					}
 				}
 			}
+		} else {
+			let output = document.getElementById('output');
+			output.innerHTML = '<div id="warning">Output not possible. Possible Problems: <br> <i class="fa fa-exclamation-triangle fa-fw"></i> Pinning-Mask is invalid</div>';
+			return
 		}
 	}
-	createContent(tasks, 'task');
+	createContent(tasks, options);
 }
