@@ -30,8 +30,8 @@ export class Rank extends CPU_Bind{
 			
 		//Fcyclic
 		}else if(this._options["distribution_socket"] === 'fcyclic'){
-			socket = Math.floor((current - thread * number_of_cores) / this._cores_per_socket[node]); 
-			core = (current - thread * number_of_cores) % this._cores_per_socket[node];
+			socket = Math.floor((current - thread * number_of_cores) / this._cores_per_socket[node][0]); 
+			core = (current - thread * number_of_cores) % this._cores_per_socket[node][socket];
 		}
 
 		return [this._socket_arr[socket], thread, core];
