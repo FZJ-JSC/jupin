@@ -1,11 +1,12 @@
 export class Validator {
 	constructor(options){
 		this._options = options;
-		this._available_cores = this._options["sockets"]*this._options["cores"]*this._options["nodes"] * this._options["threads_per_core"];
+		this._available_cores_per_node = this._options["sockets"]*this._options["cores"] * this._options["threads_per_core"];
 	}
 	
 	isValidOptions(){
-		return this._available_cores >= this._options["task"]*this._options["cpu_per_task"];
+		let max_task_per_node = Math.ceil(this._options["task"]/this._options["nodes"])
+		return this._available_cores_per_node >= max_task_per_node*this._options["cpu_per_task"];
 	}
 	
 	isValidDistribution(){
