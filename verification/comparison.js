@@ -11,10 +11,10 @@ let data = {
 let dirname = process.argv[2];
 let error = comparePinning(dirname);
 if (error)
-    process.exit(1)
+    process.exit(1);
 
 /**
-* Compare the pinning for each file in a given directory
+* Compares the pinning in each file of a specific directory with the calculated/simulated pinning
 */
 function comparePinning(dirname) {
 	let files = fs.readdirSync(dirname);
@@ -23,9 +23,10 @@ function comparePinning(dirname) {
 	for (let file of files) {
 		let options = getOptions(file);
 		let real_pinning = getRealPinning(options, dirname, file);
-		let validator = new Validator(options)
+		let validator = new Validator(options);
 
-		if (!validator.isValidDistribution()) {
+		// Test if the simulated pinning for the used options is implemented
+		if (!validator.isImplemented()) {
 			console.warn('\x1b[33m%s\x1b[0m', file+": pinning is not implemented");
 			data["unknown"].push(file);
 		} else {
@@ -33,22 +34,27 @@ function comparePinning(dirname) {
 			if (isDifferent(real_pinning, calc_pinning, options)) {
 				console.error('\x1b[31m%s\x1b[0m', file+": pinning is unequal");
 				data["unequal"].push(file);
-				error = true
+				error = true;
 			} else {
 				console.log(file+": pinning is equal");
 				data["equal"].push(file);
 			}
 		}
 	}
-	console.table({"equal": data["equal"].length, "unequal": data["unequal"].length, "not implemented": data["unknown"].length})
+	console.table({
+		"equal": data["equal"].length, 
+		"unequal": data["unequal"].length, 
+		"not implemented": data["unknown"].length
+	});
 
+	// Write results into a JSON file
 	data = JSON.stringify(data, null, 2);
 	fs.writeFileSync('results.json', data);
 	return error;
 }
 
 /**
- * Read File to generate the real pinning mask
+ * Reads the pinning from a given file and generates the corresponding pinning mask
  */
 function getRealPinning(options, dirname, filename) {
 	let text = fs.readFileSync(dirname + filename);
@@ -62,7 +68,7 @@ function getRealPinning(options, dirname, filename) {
 }
 
 /**
- * Check if the real and calculated pinning masks are different
+ * Checks if the real and calculated pinning masks are different
  */
 function isDifferent(real_pinning, calc_pinning, options) {
 	let outer_level = (options["mode"] === "node") ? options["nodes"] : options["task"];
@@ -75,5 +81,5 @@ function isDifferent(real_pinning, calc_pinning, options) {
 			}
 		}
 	}
-	return false
+	return false;
 }

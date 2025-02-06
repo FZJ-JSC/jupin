@@ -20,13 +20,15 @@
 			<span class="closebtn">&times;</span> 
 			Attention please: After updating Slurm to version 22.05, the pinning scheme has changed. This tool has not been updated yet.
 		</div>-->
-		<header>	
+		<header>
 			<a href="index.html"><p>Pinning-Process-Simulation</p></a>
 		</header>
 		<main>
 			<div id ="selection" class="two-column">
 				<form>
-					<span title='Choose a supercomputer partition on which you want to simulate the pinning.'><i class='fa fa-info-circle'></i></span>
+					<span title='Choose a supercomputer partition on which you want to simulate the pinning.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label for="supercomputer">System:</label>
 					<select id="supercomputer">
 						<option selected value="jw">JUWELS</option>
@@ -40,9 +42,11 @@
 
 					<br><br><br>
 
-					<span title='Choose between the Node-Mode, the Task-Mode and the Hex2Bin-Mode. In the Node-Mode you can visualize the pinning amongst multiple nodes. In Task-Mode the pinning for a single node is visualized by showing each task individually. In the Hex2Bin-Mode you can enter a SLURM-Process-Pinning-Mask in hexadecimal to visualize it.'><i class='fa fa-info-circle'></i></span>
-					<label for="modus"> Mode: </label>
-					<select id="modus">
+					<span title='Choose between the Node-Mode, the Task-Mode and the Hex2Bin-Mode. In the Node-Mode you can visualize the pinning amongst multiple nodes. In Task-Mode the pinning for a single node is visualized by showing each task individually. In the Hex2Bin-Mode you can enter a SLURM-Process-Pinning-Mask in hexadecimal to visualize it.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
+					<label for="mode"> Mode: </label>
+					<select id="mode">
 						<option selected value="task">Task</option>
 						<option value="node">Node</option>
 						<option value="hex2bin">Hex-Mask</option>
@@ -50,32 +54,42 @@
 
 					<br><br><br>
 
-					<span title='Enter a SLURM-Process-Pinning-Mask in hexadecimal to visualize.'><i class='fa fa-info-circle'></i></span>
+					<span title='Enter a SLURM-Process-Pinning-Mask in hexadecimal to visualize.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label for="hex2bin"> Mask: </label>
 					<input value="0x"  type="text" id="hex2bin">
 
 					<br><br><br>
 
 
-					<span title='Select the numbers of nodes on which you want to simulate the pinning. Only available in Node-Mode.'><i class='fa fa-info-circle'></i></span>
+					<span title='Select the numbers of nodes on which you want to simulate the pinning. Only available in Node-Mode.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label for="nodes">Nodes:</label>
 					<input value="1" type="number" min="1" id="nodes">
 
 					<br><br><br>
 
-					<span title='Select the numbers of tasks per job.'><i class='fa fa-info-circle'></i></span>
+					<span title='Select the numbers of tasks per job.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label for="task">Task:</label>
 					<input value="1" type="number" min="1" id="task">
 
 					<br><br><br>
 
-					<span title='Select the numbers of requested CPUs per task.'><i class='fa fa-info-circle'></i></span>
+					<span title='Select the numbers of requested CPUs per task.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label for="cpu_per_task">CPU's per task:</label>
 					<input value="1" type="number" min="1" id="cpu_per_task">
 
 					<br><br><br>
 
-					<span title='Choose an option to bind the CPU threads per task. Rank: Each task is pinned to as many threads as it requests, just filling cores consecutively. Spread the threads and tasks to as many cores as possible. This type is not influenced by the second and third part of the distribution option. Threads: Each task is pinned to as many threads as it requests. Which threads each process gets is controlled by the distribution option. Rank_Ldom: Each task is pinned to as many threads as it requests, just filling the nodes rank by rank cycling sockets and cores. This type is not influenced by the second and third level of the distribution option. The threads of a task are always packed to as few cores as possible. This is the same as cpu-bind=threads distribution=block:cyclic:block. Cores: In a first step the requested CPU threads of a task are assigned in exactly the same way as with cpu-bind=threads. But the final affinity mask for the task is the whole core where any thread is located that it is assigned to. This means if a task is assigned to any thread that is part of a core, it will be bound to the whole core. (The ‘whole’ here means to each thread of the core that is allocated to the job)'><i class='fa fa-info-circle'></i></span>
+					<span title='Choose an option to bind the CPU threads per task. Rank: Each task is pinned to as many threads as it requests, just filling cores consecutively. Spread the threads and tasks to as many cores as possible. This type is not influenced by the second and third part of the distribution option. Threads: Each task is pinned to as many threads as it requests. Which threads each process gets is controlled by the distribution option. Rank_Ldom: Each task is pinned to as many threads as it requests, just filling the nodes rank by rank cycling sockets and cores. This type is not influenced by the second and third level of the distribution option. The threads of a task are always packed to as few cores as possible. This is the same as cpu-bind=threads distribution=block:cyclic:block. Cores: In a first step the requested CPU threads of a task are assigned in exactly the same way as with cpu-bind=threads. But the final affinity mask for the task is the whole core where any thread is located that it is assigned to. This means if a task is assigned to any thread that is part of a core, it will be bound to the whole core. (The "whole" here means to each thread of the core that is allocated to the job)'>
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label for="cpu_bind">CPU-Bind:</label>
 					<select id="cpu_bind">
 						<option selected>threads</option>
@@ -86,13 +100,17 @@
 
 					<br><br><br>
 
-					<span title="Select the number of threads per core."><i class='fa fa-info-circle'></i></span>
+					<span title="Select the number of threads per core.">
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label for="threads_per_core">Threads per Core:</label>
 					<input value="1" type="number" min="1" max="2" id="threads_per_core">
 
 					<br><br><br>
 
-					<span title='Choose a distribution-option. The first part controls the distribution of the task over the nodes. Block: Distribute tasks to a node such that consecutive tasks share a node. Cyclic : Distribute tasks to a node such that consecutive tasks are distributed over consecutive nodes (in a round-robin fashion). The second part controls the distribution of tasks over sockets inside one node. Block: Each socket is first filled with tasks before the next socket will be used. Cyclic: Each task will be assigned to the next socket(s) in a round-robin fashion. Fcyclic: Each thread inside a task will be assigned to the next socket in a round-robin fashion, spreading the task itself as much as possible over all sockets. fcyclic implies cyclic. The third part controls the distribution of tasks over cores inside one node. Block: Each core is first filled with tasks before the next core will be used. Cyclic: Each task will be assigned to the next core(s) in a round-robin fashion. The threads of a task will fill the cores. Fcyclic: Each thread inside a task will be assigned to the next core in a round-robin fashion, spreading the task itself as much as possible over all cores. fcyclic implies cyclic.'><i class='fa fa-info-circle'></i></span>
+					<span title='Choose a distribution-option. The first part controls the distribution of the task over the nodes. Block: Distribute tasks to a node such that consecutive tasks share a node. Cyclic : Distribute tasks to a node such that consecutive tasks are distributed over consecutive nodes (in a round-robin fashion). The second part controls the distribution of tasks over sockets inside one node. Block: Each socket is first filled with tasks before the next socket will be used. Cyclic: Each task will be assigned to the next socket(s) in a round-robin fashion. Fcyclic: Each thread inside a task will be assigned to the next socket in a round-robin fashion, spreading the task itself as much as possible over all sockets. fcyclic implies cyclic. The third part controls the distribution of tasks over cores inside one node. Block: Each core is first filled with tasks before the next core will be used. Cyclic: Each task will be assigned to the next core(s) in a round-robin fashion. The threads of a task will fill the cores. Fcyclic: Each thread inside a task will be assigned to the next core in a round-robin fashion, spreading the task itself as much as possible over all cores. fcyclic implies cyclic.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label>Distribution:</label>
 					<fieldset>
 						<legend>Node</legend>
@@ -134,4 +152,4 @@
 			<a href="https://www.fz-juelich.de/en/privacy-policy">Data protection</a>
 		</footer>
 	</body>
-</html> 
+</html>

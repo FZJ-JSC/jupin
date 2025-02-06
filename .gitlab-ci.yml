@@ -24,15 +24,15 @@ generate_files_jusuf:
 compare_pinning:
   stage: compare
   image: node:latest
-  tags: 
+  tags:
     - public-docker
-  script: 
+  script:
     - cd webtool/javascripts/
     - mv $(ls | grep -v main.js) ../../verification/
     - cd ../../verification/
     - node comparison.js pin_logs/ || echo $? > exit_code.txt
   artifacts:
-    paths: 
+    paths:
       - verification/results.json
       - verification/exit_code.txt
     expire_in: "1 hour"

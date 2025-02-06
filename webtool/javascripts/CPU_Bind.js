@@ -27,12 +27,15 @@ export class CPU_Bind {
 		}
 	}
 
+	/**
+	 * Calculates the pinning for the given options
+	 */
 	getPinning() {
 		let outer_level = (this._options["mode"] === "node") ? this._options["nodes"] : this._options["task"];
 
 		//Create Task Array
 		let tasks = new Array(outer_level);
-		for(let outer=0; outer<outer_level; outer++){ 
+		for(let outer=0; outer<outer_level; outer++){
 			tasks[outer] = new Array(this._options["sockets"]);
 			for(let socket=0; socket<this._options["sockets"]; socket++){
 				let array_for_task = new Array(this._options["threads"]);
@@ -60,6 +63,7 @@ export class CPU_Bind {
 			}
 			let outer_pos = (this._options["mode"] === "task") ? task : node;
 
+			//Distribution-Socket and -Core
 			for(let cpu=0; cpu<this._options["cpu_per_task"]; cpu++){
 				let [socket, thread, core] = this.getCoreToBind(tasks, node, task_number, cpu);
 				if(this.isBinded(tasks, node, socket, thread, core)){
@@ -91,7 +95,10 @@ export class CPU_Bind {
 
 		return tasks;
 	}
-	
+
+	/**
+	 * Finds the next free thread from the last pinned position within a given node
+	 */
 	getNextUnbindedCore(tasks, node, task_number, core_cyclic = false){
 		let socket = this._socket_arr.indexOf(this._last[node][1]);
 		//change socket, if new task
@@ -109,10 +116,13 @@ export class CPU_Bind {
 				}
 			}
 		}
-		
+
 		return null;
 	}
 
+	/**
+	 * Calculates for each socket of a given node how many cores within the sockets can be used for pinning
+	 */
 	getCoresPerSocket(node) {
 		let cores_per_socket = new Array(this._options["sockets"]).fill(0);
 		let tasks_in_node = Math.floor(this._options["task"]/this._options["nodes"]);
@@ -128,7 +138,7 @@ export class CPU_Bind {
 			//allocate core-blocks
 			for (let b = 0; b < number_of_blocks; b++) {
 				cores_per_socket[socket] += block;
-				//if socket completely filled, use next socket
+				//if socket is completely filled, use the next socket
 				while (cores_per_socket[socket] > this._options["cores"]) {
 					let tmp = cores_per_socket[socket] - this._options["cores"];
 					cores_per_socket[socket] = this._options["cores"];
@@ -140,7 +150,7 @@ export class CPU_Bind {
 
 			//allocate remaining cores
 			cores_per_socket[socket] += Math.ceil(((tasks_in_node*this._options["cpu_per_task"])%(block*this._options["threads_per_core"]))/this._options["threads_per_core"]);
-			//if socket completely filled, use next socket
+			//if socket is completely filled, use the next socket
 			while (cores_per_socket[socket] > this._options["cores"]) {
 				let tmp = cores_per_socket[socket] - this._options["cores"];
 				cores_per_socket[socket] = this._options["cores"];
@@ -155,7 +165,10 @@ export class CPU_Bind {
 		}
 		return cores_per_socket;
 	}
-	
+
+	/**
+	 * Checks whether a specific thread in a given core, socket and node is no longer free
+	 */
 	isBinded(tasks, node, socket, thread, core){
 		if (this._options["mode"] === "node") {
 			return tasks[node][socket][thread][core]!== undefined;

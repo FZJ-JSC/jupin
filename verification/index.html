@@ -16,22 +16,26 @@
 		<link rel="stylesheet" href="stylesheets/font-awesome/css/font-awesome.min.css">
 	</head>
 	<body>
-		<header>	
+		<header>
 			<a href="index.html"><p>Pinning-Verification-Tool</p></a>
 		</header>
 		<main>
 			<div id ="selection" class="two-column">
 				<form>
-					<span title='Choose between the Node-Mode and the Task-Mode. In the Node-Mode you can visualize the pinning amongst multiple nodes. In Task-Mode the pinning for a single node is visualized by showing each task individually.'><i class='fa fa-info-circle'></i></span>
-					<label for="modus"> Mode: </label>
-					<select id="modus">
+					<span title='Choose between the Node-Mode and the Task-Mode. In the Node-Mode you can visualize the pinning amongst multiple nodes. In Task-Mode the pinning for a single node is visualized by showing each task individually.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
+					<label for="mode"> Mode: </label>
+					<select id="mode">
 						<option selected value="task">Task</option>
 						<option value="node">Node</option>
 					</select>
 
 					<br><br><br>
 
-					<span title='Choose between the categories "equal pinning", "unequal pinning" and "pinning is not implemented".'><i class='fa fa-info-circle'></i></span>
+					<span title='Choose which type of pinning setups you want to visualize. To do this, select from the categories “equal” (same pinning masks for real and calculated pinning), “unequal” (different pinning masks for real and calculated pinning) and “not implemented” (no implementation available for calculated pinning)'>
+						<i class='fa fa-info-circle'></i>
+					</span>
 					<label for="category"> Category: </label>
 					<select id="category">
 						<option value="equal">equal</option>
@@ -41,8 +45,10 @@
 
 					<br><br><br>
 
-					<span title='Choose a file for that the comparison should be displayed".'><i class='fa fa-info-circle'></i></span>
-					<label for="file"> File: </label>
+					<span title='Select a pinning setup for which the comparison should be displayed.'>
+						<i class='fa fa-info-circle'></i>
+					</span>
+					<label for="file"> Pinning-Setup: </label>
 					<select id="file">
 						<optgroup id="jw" label="JUWELS"></optgroup>
 						<optgroup id="jwg" label="JUWELS-GPU"></optgroup>

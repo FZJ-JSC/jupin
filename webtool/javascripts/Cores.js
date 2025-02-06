@@ -1,10 +1,13 @@
 import { CPU_Bind } from './CPU_Bind.js';
 
 export class Cores extends CPU_Bind{
+	/**
+	 * Calculates for a specific CPU of a specific task to which socket, core and thread it is pinned.
+	 */
 	getCoreToBind(tasks, node, task_number, cpu){
 		let shift = parseInt(task_number/this._options["sockets"]);
 		
-		// Distribution Socket Block
+		// Distribution-Socket Block
 		let socket, core, thread;
 		if(this._options["distribution_socket"] === 'block'){
 			if(this._options["threads_per_core"]===1){
@@ -16,11 +19,11 @@ export class Cores extends CPU_Bind{
 							(this._options["threads_per_core"]*this._options["cores"]))%this._options["sockets"]];
 						break;
 					case('cyclic'):
-						thread = cpu%this._options["threads_per_core"]; 
+						thread = cpu%this._options["threads_per_core"];
 						core = (task_number*parseInt(this._options["cpu_per_task"]/this._options["threads_per_core"]+0.5)
 								+parseInt(cpu/this._options["threads_per_core"]))%this._options["cores"];
 						socket = this._socket_arr[parseInt((task_number*(this._options["cpu_per_task"]+this._options["cpu_per_task"]%
-							this._options["threads_per_core"])+cpu)/(this._options["cores"]*this._options["threads_per_core"]))%this._options["sockets"]];
+								this._options["threads_per_core"])+cpu)/(this._options["cores"]*this._options["threads_per_core"]))%this._options["sockets"]];
 						break;
 					case('fcyclic'):
 						if(this._options["cores"]%this._options["cpu_per_task"]===0 || this._options["cpu_per_task"]%this._options["cores"]===0){
@@ -43,11 +46,11 @@ export class Cores extends CPU_Bind{
 				thread = 0;
 				socket = parseInt((task_number*this._options["cpu_per_task"]+cpu)/this._options["cores"])%this._options["sockets"];
 			}
-			
-		// Distribution Socket Cyclic
+
+		// Distribution-Socket Cyclic
 		}else if(this._options["distribution_socket"] === 'cyclic'){
-			socket = this._socket_arr[(task_number + 
-				parseInt(((parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"])+cpu)/(this._options["cores"]*this._options["threads_per_core"])))%this._options["sockets"]];
+			socket = this._socket_arr[(task_number + parseInt(((parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"])+cpu)/
+					(this._options["cores"]*this._options["threads_per_core"])))%this._options["sockets"]];
 			if(this._options["threads_per_core"]!== 1){
 				switch(this._options["distribution_core"]){
 					case('block'):
@@ -55,9 +58,9 @@ export class Cores extends CPU_Bind{
 						thread = (cpu+(shift*this._options["cpu_per_task"]))%this._options["threads_per_core"];
 						break;
 					case('cyclic'):
-						thread = cpu%this._options["threads_per_core"] ;
+						thread = cpu%this._options["threads_per_core"];
 						core = (parseInt(task_number/this._options["sockets"])*parseInt(this._options["cpu_per_task"]/this._options["threads_per_core"]+0.5)
-											+parseInt(cpu/this._options["threads_per_core"]))%this._options["cores"];
+								+parseInt(cpu/this._options["threads_per_core"]))%this._options["cores"];
 						break;
 					case('fcyclic'):
 						core = ((parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"])+cpu)%this._options["cores"];
@@ -69,7 +72,8 @@ export class Cores extends CPU_Bind{
 				socket = (socket + parseInt(((parseInt(task_number/this._options["sockets"])*this._options["cpu_per_task"])+cpu)/(this._options["cores"])))%this._options["sockets"];
 				thread = 0;
 			}
-		// Distribution Socket Fcyclic
+
+		// Distribution-Socket Fcyclic
 		}else if(this._options["distribution_socket"] === 'fcyclic'){
 			if(this._options["threads_per_core"]!==1){
 				socket = this._socket_arr[(cpu+task_number)%this._options["sockets"]];

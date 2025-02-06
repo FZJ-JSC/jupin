@@ -4,23 +4,26 @@ import { Rank } from './Rank.js';
 import { Rank_Ldom } from './Rank_Ldom.js';
 import { Threads } from './Threads.js';
 
+/**
+ *Configurations
+ */
 let styles =   {"colors": ["#7393dd", "#ff8200", "#0064b5", "#80c6ff", "#00467f",
 							"#b35b00", "#290aa3", "#ffc180" , "#1d0772"],
 				"socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"]};
 
 let supercomputer_attributes = {
 	"jw": {"sockets": 2, "cores": 24, "threads": 2, "gpus": [],
-	  		"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
+	  		"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
 	"jwg": {"sockets": 2, "cores": 20, "threads": 2, "gpus": [],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
+			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
 	"jwb" : {"sockets": 8, "cores": 6, "threads": 2,"gpus": [3,1,7,5],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"}, 
+			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
 	"jr": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"}, 
+			"affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
 	"jrg": {"sockets": 8, "cores": 16, "threads": 2,"gpus": [3,1,7,5],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
 	"js": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"}, 
+			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"},
 	"jsg": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [3],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"}};
 
@@ -33,23 +36,35 @@ if (typeof window !== "undefined") {
 			equal: new Array(),
 			unequal: new Array(),
 			unknown: new Array()
-		}});
-		getAndCompleteURL(data)
+		};});
+		getAndCompleteURL(data);
+		generateForm();
 
 		//Event Handler
-		document.getElementById("modus").addEventListener("change", function() {changeFiles(this.value, document.getElementById("category").value, data); generateForm();});
-		document.getElementById("category").addEventListener("change", function() {changeFiles(document.getElementById("modus").value, this.value, data); generateForm();});
+		document.getElementById("mode").addEventListener("change", function() {
+			changeFiles(this.value, document.getElementById("category").value, data); generateForm();
+		});
+		document.getElementById("category").addEventListener("change", function() {
+			changeFiles(document.getElementById("mode").value, this.value, data); generateForm();
+		});
 		document.getElementById("file").addEventListener("change", function() {generateForm();});
-		document.getElementById("zoom").addEventListener("click", function() {switchZoom(this.getAttribute("src"));});
-		document.getElementById("output_calc").addEventListener("scroll", function() {syncScroll(this, document.getElementById('output_real'));});
-		document.getElementById("output_real").addEventListener("scroll", function() {syncScroll(this, document.getElementById('output_calc'));});
+		document.getElementById("zoom").addEventListener("click", function() {
+			switchZoom(this.getAttribute("src"));
+		});
+		document.getElementById("output_calc").addEventListener("scroll", function() {
+			syncScroll(this, document.getElementById('output_real'));
+		});
+		document.getElementById("output_real").addEventListener("scroll", function() {
+			syncScroll(this, document.getElementById('output_calc'));
+		});
 	})
 }
 
 /**
-* Click-Event to zoom in/out
-*/
+ * Zooms in/out on the visualization of the pinning
+ */
 function switchZoom(src){
+	// zooms in/out on the visualization of the calculated pinning
 	let svg_calc = document.getElementById('calc_content');
 	if (svg_calc) {
 		let div_width = document.getElementById('output_calc').clientWidth;
@@ -66,6 +81,7 @@ function switchZoom(src){
 			svg_calc.style.transform = "scale(1)";
 		}
 	}
+	// zooms in/out on the visualization of the real pinning
 	let svg_real = document.getElementById('real_content');
 	if (svg_real) {
 		let div_width = document.getElementById('output_real').clientWidth;
@@ -85,15 +101,15 @@ function switchZoom(src){
 }
 
 /**
- * Synchronize scrollbars for real and calculated output
+ * Synchronizes the scrollbars for the real and calculated pinning-visualization
  */
 function syncScroll(div1, div2) {
-    div2.scrollTop = div1.scrollTop;
+	div2.scrollTop = div1.scrollTop;
 	div2.scrollLeft = div1.scrollLeft;
 }
 
 /**
- * Onchange-Event to set affinity-link for choosen system
+ * Sets the affinity-link for a given system
  */	
 function setAffinityLink(supercomputer){
 	let link = document.getElementById('affinity');
@@ -101,119 +117,120 @@ function setAffinityLink(supercomputer){
 }
 
 /**
- * Read out URL parameter to get selected options and 
- * completes URL with missing parameters
+ * Reads the URL parameters to get the selected options
  */
 function getAndCompleteURL(data){
-	//read out parameters
-    const help_parameters = (window.location.search.slice(1)).split('&');
-	
+	//read the url parameters
+	const help_parameters = (window.location.search.slice(1)).split('&');
+
 	let parameters = {};
-	for (var i = 0; i<help_parameters.length; i++){
-		var key = help_parameters[i].split('=')[0]
-		var value = help_parameters[i].split('=')[1]
+	for (let i = 0; i<help_parameters.length; i++){
+		let key = help_parameters[i].split('=')[0];
+		let value = help_parameters[i].split('=')[1];
 		parameters[key] = value;
 	}
-	const keys = ["modus", "category", "file"]
+	const keys = ["mode", "category", "file"];
 
-	//set selects and inputs
+	//set the values of the select elements
 	for (let key of keys){
-		if (key === "file") changeFiles(document.getElementById("modus").value, document.getElementById("category").value, data);
+		if (key === "file") 
+			changeFiles(document.getElementById("mode").value, document.getElementById("category").value, data);
 		if (key in parameters) {
-			var input = document.getElementById(key);
+			let input = document.getElementById(key);
 			let values = Array.from(input.options).map(option => option.value);
-			if (values.length === 0 || values.includes(value)) 
-				input.value = value;
+			if (values.length === 0 || values.includes(parameters[key]))
+				input.value = parameters[key];
 		}
 	}
-	generateForm();
-	setURL()
 }
 
 /**
- * Set URL parameter to selected options
+ * Gets the values of all select elements and adds them to the URL
  */
 function setURL(){
-	//create all options in URL
-	//get all input and select elements
-	var selects = document.getElementsByTagName('select')
+	let selects = document.getElementsByTagName('select');
 	const url = new URL(window.location);
-	for (var i=0; i<selects.length; i++) {
+	for (let i=0; i<selects.length; i++) {
 		url.searchParams.set(selects[i].id, selects[i].value.toLowerCase());
 	}
 	window.history.replaceState({}, '', url);
 }
 
 /**
-* Create command from configuration
-*/
+ * Creates Slurm-compatible command-line options for the choosen pinning-setup
+ */
 function createCommand(options){
-	//create command line
-	var command = document.getElementById('command');
+	let command = document.getElementById('command');
 	command.innerHTML = "";
-	var p = document.createElement('code');
-	p.innerHTML = '-N ' + options["nodes"] + ' -n ' + options["task"] + ' -c ' + options["cpu_per_task"] + ' --cpu-bind=' + options["cpu_bind"] + 
-				 ' --distribution=' + options["distribution_node"] + ':' + options["distribution_socket"] + ':' + options["distribution_core"] +
-				 ' --threads-per-core=' + options["threads_per_core"];
-	
+	let p = document.createElement('code');
+	p.innerHTML = '-N ' + options["nodes"] + ' -n ' + options["task"] + ' -c ' + options["cpu_per_task"] +
+				  ' --cpu-bind=' + options["cpu_bind"] + ' --distribution=' + options["distribution_node"] +
+				  ':' + options["distribution_socket"] + ':' + options["distribution_core"] +
+				  ' --threads-per-core=' + options["threads_per_core"];
+
 	p.style.textAlign = "center";
 	command.appendChild(p);
 }
 
-/*
-* Change-Event to create pinning with given options
-*/
+/**
+ * Creates the pinning masks for the real and calculated pinning and starts the visualization.
+ * Generates a warning if the visualization is not possible.
+ */
 async function generateForm() {
 	setURL()
-	let file = document.getElementById('file').value
+	let file = document.getElementById('file').value;
+	//generate a warning, if no file/setup is selected
 	if (file === "") {
-		document.getElementById('affinity').removeAttribute("href")
+		document.getElementById('affinity').removeAttribute("href");
 		document.getElementById('command').innerHTML = "";
 		document.getElementById("difference").innerHTML = "";
 		let output_calc = document.getElementById('output_calc');
 		let output_real = document.getElementById('output_real');
 		output_calc.innerHTML = '<div id="warning"><i class="fa fa-cog fa-spin"></i> There are no files for these options</div>';
-		output_real.style.height = "0%"
-		output_calc.style.height = "100%"
-		return
+		output_real.style.height = "0%";
+		output_calc.style.height = "100%";
+		return;
 	}
 	let options = getOptions(file);
 
-	setAffinityLink(options["supercomputer"])
+	setAffinityLink(options["supercomputer"]);
 	createCommand(options);
 
-    let real_tasks = await fetch("pin_logs/"+file)
+	//create the pinning mask for the real pinning
+	let real_tasks = await fetch("pin_logs/"+file)
 	.then((res) => {
 		if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 		return res.text();
 	})
 	.then((text) => {
-		let file_array = text.split("\n")
+		let file_array = text.split("\n");
 		for(let i = 0; i < file_array.length-1; i++) {
 			file_array[i] = file_array[i].trim().split(/\s+/);
 		}
 		let tasks = createTasksFromFile(file_array, options);
 		return tasks;
 	})
-	.catch((e) => {return undefined;})
+	.catch((e) => {return undefined;});
 
+	//create the pinning mask for he calculated pinning
 	let calc_tasks = undefined;
-	let validator = new Validator(options)
-	if (validator.isValidDistribution()) {
-		calc_tasks = getCalcPinning(options)
+	let validator = new Validator(options);
+	if (validator.isImplemented()) {
+		calc_tasks = getCalcPinning(options);
 	}
 	createOutput(real_tasks, calc_tasks, options);
 }
 
 /**
- * Create calculated output und real output
+ * Identifies the differences between the real and calculated pinning and 
+ * generates the visualization of the pinning.
  */
 function createOutput(real_tasks, calc_tasks, options) {
 	let outer_level = (options["mode"] == "node") ? options["nodes"] : options["task"];
-	
-	//find differences
+
+	//identify differences
 	let diff = new Array(outer_level);
-	for(let outer=0; outer<outer_level; outer++){ 
+	for(let outer=0; outer<outer_level; outer++){
 		diff[outer] = new Array(options["sockets"]);
 		for(let socket=0; socket<options["sockets"]; socket++){
 			let array_for_diff = new Array(options["threads"]);
@@ -239,31 +256,31 @@ function createOutput(real_tasks, calc_tasks, options) {
 			}
 		}
 		document.getElementById("difference").innerHTML = diff_count + " Difference(s)";
-		if (diff_count > 0) document.getElementById("difference").style.color = "#eb5f73"
-		else document.getElementById("difference").style.color = "black"
+		if (diff_count > 0) document.getElementById("difference").style.color = "#eb5f73";
+		else document.getElementById("difference").style.color = "black";
 	}
 	
 
-	//Create svg files
+	//generate visualization
 	let output_calc = document.getElementById('output_calc');
 	let output_real = document.getElementById('output_real');
 
 	if(calc_tasks) {
-		output_real.style.height = "calc(50% - 15px)"
-		output_calc.style.height = "calc(50% - 15px)"
+		output_real.style.height = "calc(50% - 15px)";
+		output_calc.style.height = "calc(50% - 15px)";
 		createContent(calc_tasks, diff, options, true);
 		createContent(real_tasks, diff, options, false);
 	} else {
-		output_calc.style.height = "20px"
-		output_real.style.height = "calc(100% - 50px)"
+		output_calc.style.height = "20px";
+		output_real.style.height = "calc(100% - 50px)";
 		createContent(real_tasks, diff, options, false);
-		output_calc.innerHTML = "There is no rule-based version for these options!"
+		output_calc.innerHTML = "There is no rule-based version for these options!";
 	}
 }
 
 /**
-* Create svg file to create pinning-content
-*/
+ * Generates the visualization for a given pinning mask
+ */
 function createContent(tasks, diff, options, rule_based){
 	let output = (rule_based) ? document.getElementById('output_calc') : document.getElementById('output_real');
 	output.innerHTML = "";
@@ -271,13 +288,15 @@ function createContent(tasks, diff, options, rule_based){
 	//get needed width and height or a bit more
 	let width = 30 + (tasks[0].length + (tasks[0].length*tasks[0][0][0].length))*22;
 	let height = tasks.length * tasks[0][0].length * 90;
-	// create the svg element
+
+	//create the svg element
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-	// set width and height
 	if (rule_based) svg.setAttribute("id", "calc_content"); else svg.setAttribute("id", "real_content");
+
+	//set width and height
 	svg.setAttribute("width", width);
 	svg.setAttribute("height", height);
-	//create pinning-mask
+
 	let margin = (tasks[0].length === 8) ? 50: 20;
 	const title = document.createElementNS("http://www.w3.org/2000/svg", "text");
 	title.setAttribute("x", "10");
@@ -285,8 +304,10 @@ function createContent(tasks, diff, options, rule_based){
 	title.setAttribute("fill", "#023d6b");
 	title.setAttribute("font-family", "Arial, Helvetica, sans-serif");
 	title.setAttribute("font-weight", "bold");
-	title.textContent = (rule_based) ? 'RULE-BASED:' : 'REAL SITUATION:'
+	title.textContent = (rule_based) ? 'RULE-BASED:' : 'REAL SITUATION:';
 	svg.appendChild(title);
+
+	//generate the visualization of the pinning mask
 	for(let i=0; i<tasks.length; i++){ //Tasks/Nodes
 		const headline = document.createElementNS("http://www.w3.org/2000/svg", "text");
 		headline.setAttribute("x", "10");
@@ -299,12 +320,14 @@ function createContent(tasks, diff, options, rule_based){
 
 		for(let j=0; j<tasks[i].length; j++){ //Sockets
 			for(let k=0; k<tasks[i][j].length; k++){ //Threads
-				for(let l=0; l<tasks[i][j][k].length; l++){ //Kerne
+				for(let l=0; l<tasks[i][j][k].length; l++){ //Cores
 					const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 					core.setAttribute("x", 30 + j*(tasks[i][j][k].length+1)*22 + l*22);
 					core.setAttribute("y", margin + 10 + i*(tasks[i][j].length+2)*22 + k*22);
 					core.setAttribute("width", "20");
 					core.setAttribute("height", "20");
+
+					//highlight difference
 					if(diff[i][j][k][l]) {
 						core.setAttribute("stroke-width", "3");
 						core.setAttribute("stroke", "#ff0000");
@@ -352,7 +375,7 @@ function createContent(tasks, diff, options, rule_based){
 		}
 	}
 
-	// add gpu
+	// add gpus
 	let gpus = supercomputer_attributes[options["supercomputer"]]['gpus'];
 	for(let i=0; i<gpus.length; i++){
 		const gpuheadline = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -381,7 +404,7 @@ function createContent(tasks, diff, options, rule_based){
 		gpurect.setAttribute("stroke-width", "2");
 		svg.appendChild(gpurect);
 	}
-	
+
 	//keep zoom
 	let src = document.getElementById('zoom').getAttribute("src");
 	let div_width = output.clientWidth;
@@ -398,16 +421,16 @@ function createContent(tasks, diff, options, rule_based){
 }
 
 /**
-* Get used options for the (selected) file
-*/
+ * Gets the options used for the selected pinning setup/file.
+ */
 export function getOptions(file) {
 	let options = {};
 	let testcase = file.replace(".out","").split("-");
 
 	options["supercomputer"] = testcase[0];
-	options["sockets"] = supercomputer_attributes[options["supercomputer"]]['sockets']; 
-	options["cores"] = supercomputer_attributes[options["supercomputer"]]['cores']; 
-	options["threads"] = supercomputer_attributes[options["supercomputer"]]['threads']; 
+	options["sockets"] = supercomputer_attributes[options["supercomputer"]]['sockets'];
+	options["cores"] = supercomputer_attributes[options["supercomputer"]]['cores'];
+	options["threads"] = supercomputer_attributes[options["supercomputer"]]['threads'];
 	options["nodes"] = parseInt(testcase[1]);
 	options["task"] = parseInt(testcase[2]);
 	options["cpu_per_task"] = parseInt(testcase[3]);
@@ -417,15 +440,15 @@ export function getOptions(file) {
 	options["distribution_socket"] = testcase[7];
 	options["distribution_core"] = testcase[8];
 	if (typeof window === "undefined")
-		options["mode"] = (options["nodes"] === 1) ? "task" : "node";
+		options["mode"] = "node";
 	else
-		options["mode"] = document.getElementById("modus").value;
+		options["mode"] = document.getElementById("mode").value;
 
 	return options;
 }
 
 /**
- * Creates pinning-array for the file
+ * Generates the pinning mask for the data read from a file
  */
 export function createTasksFromFile(file_array, options) {
 	let outer_level = (options["mode"] === "node") ? options["nodes"] : options["task"];
@@ -433,7 +456,7 @@ export function createTasksFromFile(file_array, options) {
 	//Create Task Array
 	let tasks = new Array(outer_level);
 	let threads = supercomputer_attributes[options["supercomputer"]]['threads'];
-	for(let outer=0; outer<outer_level; outer++){ 
+	for(let outer=0; outer<outer_level; outer++){
 		tasks[outer] = new Array(options["sockets"]);
 		for(let socket=0; socket<options["sockets"]; socket++){
 			let array_for_task = new Array(threads);
@@ -464,12 +487,12 @@ export function createTasksFromFile(file_array, options) {
 		} else {
 			tasks[out][socket][thread][core] = rank;
 		}
-	}						
+	}
 	return tasks;
 }
 
 /**
- * Generate the calculated pinning mask
+ * Generates the pinning mask for the calculated pinning
  */
 export function getCalcPinning(options) {
 	let CPU_Bind;
@@ -484,24 +507,24 @@ export function getCalcPinning(options) {
 			CPU_Bind = new Threads(options);
 			break;
 		case 'cores':
-			CPU_Bind = new Cores(options); 
+			CPU_Bind = new Cores(options);
 			break;
 	}
 	return CPU_Bind.getPinning();
 }
 
 /**
- * Display all the files that are relevant for the current modus and category
+ * Displays all pinning setups/files that are relevant for the current mode and category
  */
-function changeFiles(modus, category, data) {
-	const select = document.getElementById("file")
+function changeFiles(mode, category, data) {
+	const select = document.getElementById("file");
 
-	let options = select.getElementsByTagName("option")
+	let options = select.getElementsByTagName("option");
 	while (options.length > 0) {
-		options[0].remove()
+		options[0].remove();
 	}
-  
-	const items = (modus == "node") ? data[category] : data[category].filter(item => item.split("-")[1] === "1");
+
+	const items = (mode == "node") ? data[category] : data[category].filter(item => item.split("-")[1] === "1");
 	for (let item of items) {
 		let optgroup = document.getElementById(item.split("-")[0]);
 		const option = document.createElement("option");

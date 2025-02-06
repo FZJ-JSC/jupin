@@ -14,6 +14,7 @@
       <parameter name="load_modules" type="string" tag="ip">ml Intel ParaStationMPI</parameter>
       <parameter name="load_modules" type="string" tag="ii">ml Intel IntelMPI</parameter>
       <parameter name="load_modules" type="string" tag="gp">ml GCC ParaStationMPI</parameter>
+      
       <parameter name="source_dir" type="string">${jube_benchmark_home}</parameter>
       <parameter name="source_file" type="string">all_hello_world_mask.cpp</parameter>
       <parameter name="exe_file" type="string">hello_world.exe</parameter>
@@ -50,6 +51,7 @@
       <parameter name="threadspertask" type="int" mode="python">
         {"js" : [ 32, 64, 96, 128, 64, 128, 192, 256, 3, 3, 8, 8, 1, 1, 1, 1, 1, 1, 1, 1][$i]}.get("${system}",0)
       </parameter>
+
       <parameter name="executable">./compile/${exe_file}</parameter>
       <parameter name="args_exec">${system}</parameter>
       <parameter name="timelimit">00:02:00</parameter>
@@ -58,13 +60,13 @@
       <parameter name="queue">batch</parameter> <!-- maint -A root-->
       <parameter name="account">cstao</parameter> <!-- root, cstao -->
       <parameter name="additional_job_config">#SBATCH --threads-per-core=${tpc}</parameter>
+
       <parameter name="filename">
         ${system}-${nodes}-${tasks}-${threadspertask}-${tpc}-${cpubind}-${node_dist}-${socket_dist}-${core_dist}
       </parameter>
       <parameter name="outlogfile">${filename}.out</parameter>
       <parameter name="errlogfile">${filename}.err</parameter>
     </parameterset>
-
 
     <parameterset name="executeset" init_with="platform.xml">
       <parameter name="cpubind" tag="threads">threads</parameter>
@@ -73,7 +75,7 @@
       <parameter name="cpubind" tag="cores">cores</parameter>
       <parameter name="cpubind" tag="cb_all">threads,rank,rank_ldom,cores</parameter>
       <parameter name="cpubind_arg" mode="python" separator="%">
-	      "--cpu-bind=v,${cpubind}" if "${cpubind}" != "" else ""
+        "--cpu-bind=v,${cpubind}" if "${cpubind}" != "" else ""
       </parameter>
 
       <parameter name="node_dist">block</parameter>
@@ -83,18 +85,20 @@
       <parameter name="core_dist" tag="cd_all">cyclic,fcyclic</parameter>
       <parameter name="distribution">${node_dist}:${socket_dist}:${core_dist}</parameter>
       <parameter name="distribution_arg" mode="python" separator="%">
-	      "--distribution=${distribution}" if "${distribution}" != "" else ""
+        "--distribution=${distribution}" if "${distribution}" != "" else ""
       </parameter>
 
       <parameter name="tpc" type="int" mode="python">
-	      {"js" : [ 1, 1, 1,  1, 2,  2,  2,  2, 1, 2, 1, 2, 1, 2,  1,  2,  1,  2,  2,  2][$i]}.get("${system}",0)
+        {"js" : [ 1, 1, 1,  1, 2,  2,  2,  2, 1, 2, 1, 2, 1, 2,  1,  2,  1,  2,  2,  2][$i]}.get("${system}",0)
       </parameter>
       <parameter name="tpc_arg">--threads-per-core=${tpc}</parameter>
 
       <parameter name="verbose"></parameter>
       <parameter name="verbose" tag="verbose">--verbose</parameter>
 
-      <parameter name="args_starter" separator="%">${verbose} ${tpc_arg} ${cpubind_arg} ${distribution_arg}</parameter>
+      <parameter name="args_starter" separator="%">
+        ${verbose} ${tpc_arg} ${cpubind_arg} ${distribution_arg}
+      </parameter>
     </parameterset>
 
 
@@ -105,7 +109,7 @@
         export OMP_PLACES=threads OMP_PROC_BIND=close
         export SRUN_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK}
         export PSSLURM_PRINT_COREMAPS=1
-        $env                                                                                  
+        $env
       </sub>
       <sub source="#ENV#" tag="ip|gp" separator="|">
         export OMP_NUM_THREADS=$${SLURM_CPUS_PER_TASK}
@@ -158,9 +162,9 @@
     <analyser name="analyse_time" reduce="false">
       <use>runtime_pat</use>
       <analyse step="exe">
-	<file>${errlogfile}</file>
-	<file use="out_pat">${outlogfile}</file>
-	<file use="status_pat">stdout</file>
+        <file>${errlogfile}</file>
+        <file use="out_pat">${outlogfile}</file>
+        <file use="status_pat">stdout</file>
       </analyse>
     </analyser>
 
@@ -169,13 +173,13 @@
       <use>analyse_time</use>
       <table name="res" style="pretty">
         <column>system</column>
-	<column>nodes</column>
+        <column>nodes</column>
         <column>tasks</column>
         <column title="tpt">threadspertask</column>
-	<column>tpc</column>
+        <column>tpc</column>
         <column>cpubind</column>
         <column title="dist">distribution</column>
-	<column>runtime</column> 
+        <column>runtime</column> 
         <column>status</column>
         <column>exit_code</column>
       </table>
