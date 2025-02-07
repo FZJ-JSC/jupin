@@ -261,7 +261,7 @@ function createContent(tasks, diff, options, rule_based){
 						if(tasks[i].length === 8){
 							core.setAttribute("fill", utils.styles.socket_color[parseInt(j/4)]);
 						}else{
-							core.setAttribute("fill", utils.styles.socket_color[j]);
+							core.setAttribute("fill", utils.styles.socket_color[j%2]);
 						}
 						pin.setAttribute("fill", '#023d6b');
 						pin.textContent = 'x';

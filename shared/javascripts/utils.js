@@ -25,7 +25,9 @@ export let supercomputer_attributes = {
 	"js": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
 		   "affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"},
 	"jsg": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [3],
-			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"}};
+			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"},
+	"jd": {"sockets": 4, "cores": 72, "threads": 1, "gpus": [],
+			"affinity": "https://apps.fz-juelich.de/jsc/hps/jedi/affinity.html"}};
 
 /**
  * Zooms in/out on a given svg-element

@@ -3,19 +3,27 @@ import * as utils from './utils.js';
 
 window.addEventListener("DOMContentLoaded", () => {
 	getAndCompleteURL();
-	utils.setURL();
-	switchMode(document.getElementById("mode").value);
-	switchSystem(document.getElementById("supercomputer").value);
+	switchDisabled(document.getElementById("mode").value,document.getElementById("supercomputer").value,document.getElementById("cpu_bind").value);
+	generateForm();
 
 	//Event Handler
 	//document.querySelector(".alert .closebtn").addEventListener("click", function() {closeAlert(this);});
-	document.getElementById("supercomputer").addEventListener("change", function() {switchSystem(this.value);});
-	document.getElementById("mode").addEventListener("change", function() {switchMode(this.value);});
-	document.getElementById("hex2bin").addEventListener("change", function() {hex2Bin(this.value);});
+	document.getElementById("supercomputer").addEventListener("change", function() {
+		switchDisabled(document.getElementById("mode").value,this.value,document.getElementById("cpu_bind").value);
+		generateForm();
+	});
+	document.getElementById("mode").addEventListener("change", function() {
+		switchDisabled(this.value,document.getElementById("supercomputer").value,document.getElementById("cpu_bind").value);
+		generateForm();
+	});
+	document.getElementById("hex2bin").addEventListener("change", function() {generateForm();});
 	document.getElementById("nodes").addEventListener("change", function() {generateForm();});
 	document.getElementById("task").addEventListener("change", function() {generateForm();});
 	document.getElementById("cpu_per_task").addEventListener("change", function() {generateForm();});
-	document.getElementById("cpu_bind").addEventListener("change", function() {switchCPUBind(this.value);});
+	document.getElementById("cpu_bind").addEventListener("change", function() {
+		switchDisabled(document.getElementById("mode").value,document.getElementById("supercomputer").value,this.value);
+		generateForm();
+	});
 	document.getElementById("threads_per_core").addEventListener("change", function() {generateForm();});
 	document.getElementById("distribution_node").addEventListener("change", function() {generateForm();});
 	document.getElementById("distribution_socket").addEventListener("change", function() {generateForm();});
@@ -35,34 +43,12 @@ function closeAlert(elem){
 }
 
 /**
- * Disables unnecessary selectors for the given mode
+ * Disables unnecessary selectors for the given options
  */
-function switchMode(mode){
-	//switch mode to task and disable hexmask and nodes
-	if(mode === 'task'){
-		document.getElementById("hex2bin").disabled = true;
-		document.getElementById("nodes").value = 1;
-		document.getElementById("nodes").disabled = true;
-		document.getElementById("task").disabled = false;
-		document.getElementById("cpu_per_task").disabled = false;
-		document.getElementById("cpu_bind").disabled = false;
-		document.getElementById("threads_per_core").disabled = false;
-		document.getElementById("distribution_node").disabled = false;
-		document.getElementById("distribution_socket").disabled = false;
-		switchCPUBind(document.getElementById("cpu_bind").value);
-	//switch mode to node and disable hexmask
-	}else if(mode === 'node'){
-		document.getElementById("hex2bin").disabled = true;
-		document.getElementById("nodes").disabled = false;
-		document.getElementById("task").disabled = false;
-		document.getElementById("cpu_per_task").disabled = false;
-		document.getElementById("cpu_bind").disabled = false;
-		document.getElementById("threads_per_core").disabled = false;
-		document.getElementById("distribution_node").disabled = false;
-		document.getElementById("distribution_socket").disabled = false;
-		switchCPUBind(document.getElementById("cpu_bind").value);
-	//switch mode to hex2bin and disable all
-	}else{
+function switchDisabled(mode,system,cpu_bind){
+	utils.setAffinityLink(system);
+
+	if (mode === 'hex2bin') {
 		document.getElementById("hex2bin").disabled = false;
 		document.getElementById("nodes").value = 1;
 		document.getElementById("nodes").disabled = true;
@@ -73,29 +59,28 @@ function switchMode(mode){
 		document.getElementById("distribution_node").disabled = true;
 		document.getElementById("distribution_socket").disabled = true;
 		document.getElementById("distribution_core").disabled = true;
-		hex2Bin(document.getElementById("hex2bin").value);
-	}
-}
-
-/**
- * Adjusts the affinity link and the maximum number of threads for the given system
- */
-function switchSystem(system){
-	utils.setAffinityLink(system);
-	document.getElementById("threads_per_core").max = utils.supercomputer_attributes[system]['threads'];
-	if (document.getElementById("mode").value === "hex2bin"){
-		hex2Bin(document.getElementById("hex2bin").value);
 	} else {
-		generateForm();
+		document.getElementById("hex2bin").disabled = true;
+		document.getElementById("task").disabled = false;
+		document.getElementById("cpu_per_task").disabled = false;
+		document.getElementById("cpu_bind").disabled = false;
+		document.getElementById("distribution_node").disabled = false;
+		document.getElementById("distribution_socket").disabled = false;
+		document.getElementById('distribution_core').disabled = (cpu_bind === 'threads' || cpu_bind === 'cores') ? false : true;
+		if (utils.supercomputer_attributes[system]['threads'] === 1) {
+			document.getElementById("threads_per_core").value = 1;
+			document.getElementById("threads_per_core").disabled = true;
+		} else {
+			document.getElementById("threads_per_core").max = utils.supercomputer_attributes[system]['threads'];
+			document.getElementById("threads_per_core").disabled = false;
+		}
+		if(mode === 'task'){
+			document.getElementById("nodes").value = 1;
+			document.getElementById("nodes").disabled = true;
+		}else{
+			document.getElementById("nodes").disabled = false;
+		}
 	}
-}
-
-/**
- * Disables unnecessary selectors for the given cpu-bind option.
- */
-function switchCPUBind(cpu_bind){
-	document.getElementById('distribution_core').disabled = (cpu_bind === 'threads' || cpu_bind === 'cores') ? false : true;
-	generateForm();
 }
 
 /**
@@ -151,6 +136,10 @@ function getOptions() {
  */
 function generateForm() {
 	let options = getOptions();
+	if (options["mode"] === "hex2bin"){
+		hex2Bin(options);
+		return;
+	}
 	let output = document.getElementById('output');
 	utils.setURL();
 
@@ -241,7 +230,7 @@ function createContent(tasks, options){
 						if(tasks[i].length === 8){
 							core.setAttribute("fill", utils.styles.socket_color[parseInt(j/4)]);
 						}else{
-							core.setAttribute("fill", utils.styles.socket_color[j]);
+							core.setAttribute("fill", utils.styles.socket_color[j%2]);
 						}
 						pin.setAttribute("fill", '#023d6b');
 						pin.textContent = 'x';
@@ -303,10 +292,9 @@ function createContent(tasks, options){
  * Creates the pinning masks for a given hexmask and starts the visualization.
  * Generates a warning if the hexmask is invalid.
  */
-function hex2Bin(hex){
-	hex = hex.replace(/\s+/g, '');
+function hex2Bin(options){
+	let hex = options["hex2bin"].replace(/\s+/g, '');
 	hex = hex.split(",");
-	let options = getOptions();
 	utils.setURL();
 	utils.createCommand(options);
 
