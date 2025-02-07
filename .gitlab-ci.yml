@@ -4,6 +4,12 @@ stages:
   - deploy
   - result
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: never
+    - when: always
+
 generate_files_jusuf:
   id_tokens:
     SITE_ID_TOKEN:
