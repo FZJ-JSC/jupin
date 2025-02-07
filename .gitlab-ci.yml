@@ -27,9 +27,8 @@ compare_pinning:
   tags:
     - public-docker
   script:
-    - cd webtool/javascripts/
-    - mv $(ls | grep -v main.js) ../../verification/
-    - cd ../../verification/
+    - mv shared/javascripts/* verification/
+    - cd verification/
     - node comparison.js pin_logs/ || echo $? > exit_code.txt
   artifacts:
     paths:
@@ -40,16 +39,11 @@ compare_pinning:
 pages:
   stage: deploy
   script:
-    - mkdir public/
-    - mkdir public/javascripts/
+    - mv shared public
     - mv verification/results.json public/results.json
     - mv verification/pin_logs/ public/pin_logs/
     - mv verification/index.html public/index.html
     - mv verification/main.js public/javascripts/main.js
-    - mv webtool/images/ public/images/
-    - mv webtool/stylesheets/ public/stylesheets/
-    - cd webtool/javascripts/
-    - mv $(ls | grep -v main.js) ../../public/javascripts/
   artifacts:
     paths:
       - public/
