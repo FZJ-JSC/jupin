@@ -167,10 +167,21 @@ function createContent(tasks, options){
 	//get output div and empty
 	let output = document.getElementById('output');
 	output.innerHTML = "";
+	let gpus = utils.supercomputer_attributes[options["supercomputer"]]['gpus'];
+	let numa_per_socket = (options["sockets"] == 8) ? 4 : 1;
 
-	//get needed width and height or a bit more
-	let width = 30 + (tasks[0].length + (tasks[0].length*tasks[0][0][0].length))*22;
-	let height = tasks.length * tasks[0][0].length * 90;
+	//get needed width and height
+	let thread_width = 20;
+	let thread_height = 0.9*20;
+	let space = 20;
+	let info_height = 15
+	let socket_height = options["threads"] * thread_height+info_height
+	let numa_width = options["cores"] * thread_width
+	let socket_width = numa_per_socket*numa_width+(numa_per_socket-1)*space
+	let node_height = (options["sockets"]/numa_per_socket) * socket_height + ((options["sockets"]/numa_per_socket) + 2) * space
+	let node_width = socket_width + 2 * space
+	let width = node_width + 2 * space;
+	let height = tasks.length * node_height + (tasks.length + 1) * space
 
 	// create the svg element
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -180,99 +191,98 @@ function createContent(tasks, options){
 	svg.setAttribute("width", width);
 	svg.setAttribute("height", height);
 
-	let margin = (tasks[0].length === 8) ? 50 : 20;
-	//generate the visualization of the pinning mask
 	for(let i=0; i<tasks.length; i++){ //Tasks/Nodes
+		const node = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		node.setAttribute("x", space);
+		node.setAttribute("y", space + (node_height + space) * i);
+		node.setAttribute("width", node_width);
+		node.setAttribute("height", node_height);
+		node.setAttribute("fill", "#ebebeb");
+		node.setAttribute("stroke-width", "1");
+		node.setAttribute("stroke", "#023d6b");
+		svg.appendChild(node);
 		const headline = document.createElementNS("http://www.w3.org/2000/svg", "text");
-		headline.setAttribute("x", "10");
-		headline.setAttribute("y", margin + i*(tasks[i][0].length+2)*22);
+		headline.setAttribute("x", space+10);
+		headline.setAttribute("y", space + (node_height + space) * i + 20);
 		headline.setAttribute("fill", "#023d6b");
 		headline.setAttribute("font-family", "Arial, Helvetica, sans-serif");
-		headline.textContent = (options["mode"] === "node") ? "Node" : "Task";
+		headline.setAttribute("font-weight", "bold");
+		headline.textContent = (options["mode"] === "node") ? "Node " : "Task ";
 		headline.textContent += i+':';
 		svg.appendChild(headline);
 
-		for(let j=0; j<tasks[i].length; j++){ //Sockets
-			for(let k=0; k<tasks[i][j].length; k++){ //Threads
-				for(let l=0; l<tasks[i][j][k].length; l++){ //Cores
-					const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-					core.setAttribute("x", 30 + j*(tasks[i][j][k].length+1)*22 + l*22);
-					core.setAttribute("y", margin + 10 + i*(tasks[i][j].length+2)*22 + k*22);
-					core.setAttribute("width", "20");
-					core.setAttribute("height", "20");
+		for(let j=0; j<options["sockets"]; j++){ //Sockets
+			const socket = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+			socket.setAttribute("x", 2*space -0.25*space);
+			socket.setAttribute("y", 3* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket)-0.25*space);
+			socket.setAttribute("width", socket_width+0.5*space-0.1*thread_width);
+			socket.setAttribute("height", socket_height+0.5*space);
+			socket.setAttribute("fill-opacity", "0");
+			socket.setAttribute("stroke-width", "1");
+			socket.setAttribute("stroke", "#ADBDE3");
+			svg.appendChild(socket);
+			const info = document.createElementNS("http://www.w3.org/2000/svg", "text");
+			info.setAttribute("x", 2*space + (j%numa_per_socket) * (numa_width+space));
+			info.setAttribute("y", 3* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket)+0.7*info_height);
+			info.setAttribute("fill", "#023d6b");
+			info.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+			info.setAttribute("font-size", "0.8em");
+			info.setAttribute("dominant-baseline", "auto");
+			info.textContent = "NUMA " + j
+			if (gpus.includes(j)) 
+				info.textContent += " / GPU " + gpus.indexOf(j)
+			svg.appendChild(info);
+			for(let l=0; l<options["cores"]; l++){ //Cores
+				for(let k=0; k<options["threads"]; k++){ //Threads
+					const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+					thread.setAttribute("x", 2*space + l * thread_width + (j%numa_per_socket) * (numa_width+space));
+					thread.setAttribute("y", 3* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket) + k * thread_height+info_height);
+					thread.setAttribute("width", 0.9*thread_width);
+					thread.setAttribute("height", thread_height);
 
-					const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
-					let xoffset,yoffset,fontsize;
+					let fontsize;
 					if (tasks[i][j][k][l]>99) {
-						xoffset = 6;
-						yoffset = 1;
 						fontsize = "0.7em";
 					} else if (tasks[i][j][k][l]>9) {
-						xoffset = 4;
-						yoffset = 1;
-						fontsize = "0.9em";
+						fontsize = "0.8em";
 					} else {
-						xoffset = 0;
-						yoffset = 0;
-						fontsize = "1.0em";
+						fontsize = "0.9em";
 					}
-					pin.setAttribute("x", 36 - xoffset + j*(tasks[i][j][k].length+1)*22 + l*22);
-					pin.setAttribute("y", margin + 25 - yoffset + i*(tasks[i][j].length+2)*22 + k*22);
-					pin.setAttribute("width", "30");
-					pin.setAttribute("height", "30");
+					const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
+					pin.setAttribute("x", 2*space + (l+0.45) * thread_width + (j%numa_per_socket) * (numa_width+space));
+					pin.setAttribute("y", 3* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket) + (k+0.55) * thread_height+info_height);
+					pin.setAttribute("width", thread_width);
+					pin.setAttribute("height", thread_height);
 					pin.setAttribute("font-size", fontsize);
+					pin.setAttribute("text-anchor", "middle");
+					pin.setAttribute("dominant-baseline", "middle");
 
 					if(tasks[i][j][k][l] !== undefined){
 						pin.textContent = tasks[i][j][k][l];
-						core.setAttribute("fill", utils.styles.colors[parseInt(tasks[i][j][k][l])%9]);
+						thread.setAttribute("fill", utils.styles.colors[parseInt(tasks[i][j][k][l])%9]);
 						pin.setAttribute("fill", 'white');
 					}else{
-						if(tasks[i].length === 8){
-							core.setAttribute("fill", utils.styles.socket_color[parseInt(j/4)]);
-						}else{
-							core.setAttribute("fill", utils.styles.socket_color[j%2]);
-						}
+						thread.setAttribute("fill", utils.styles.socket_color[parseInt(j/numa_per_socket)%2]);
 						pin.setAttribute("fill", '#023d6b');
 						pin.textContent = 'x';
 					}
 
-					svg.appendChild(core);
+					svg.appendChild(thread);
 					svg.appendChild(pin);
 				}
+				const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+				core.setAttribute("x", 2*space + l * thread_width + (j%numa_per_socket) * (numa_width+space));
+				core.setAttribute("y", 3* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket)+info_height);
+				core.setAttribute("width", 0.9*thread_width);
+				core.setAttribute("height", (options["threads"])*thread_height);
+				core.setAttribute("fill-opacity", "0");
+				core.setAttribute("stroke-width", "1");
+				core.setAttribute("stroke", "#023d6b");
+				svg.appendChild(core);
 			}
 		}
 	}
 
-	// add gpus
-	let gpus = utils.supercomputer_attributes[options["supercomputer"]]['gpus'];
-	for(let i=0; i<gpus.length; i++){
-		const gpuheadline = document.createElementNS("http://www.w3.org/2000/svg", "text");
-		gpuheadline.setAttribute("x", 35 + gpus[i]*(tasks[0][0][0].length+1)*22);
-		gpuheadline.setAttribute("y", 20);
-		gpuheadline.setAttribute("fill", "#023d6b");
-		gpuheadline.setAttribute("font-family", "Arial, Helvetica, sans-serif");
-		gpuheadline.setAttribute("font-weight", "bold");
-		gpuheadline.textContent = 'Direct connection';
-		svg.appendChild(gpuheadline);
-		const gpuheadline2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-		gpuheadline2.setAttribute("x", 65 + gpus[i]*(tasks[0][0][0].length+1)*22);
-		gpuheadline2.setAttribute("y", 40);
-		gpuheadline2.setAttribute("fill", "#023d6b");
-		gpuheadline2.setAttribute("font-family", "Arial, Helvetica, sans-serif");
-		gpuheadline2.setAttribute("font-weight", "bold");
-		gpuheadline2.textContent = 'to GPU '+i;
-		svg.appendChild(gpuheadline2);
-		const gpurect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-		gpurect.setAttribute("x", 25 + gpus[i]*(tasks[0][0][0].length+1)*22);
-		gpurect.setAttribute("y", margin);
-		gpurect.setAttribute("width", tasks[0][0][0].length*22 +8);
-		gpurect.setAttribute("height", tasks.length * 60 + (tasks.length-1)* 28);
-		gpurect.setAttribute("fill", "none");
-		gpurect.setAttribute("stroke", "#023d6b");
-		gpurect.setAttribute("stroke-width", "2");
-		svg.appendChild(gpurect);
-	}
-	
 	//keep zoom
 	let src = document.getElementById('zoom').getAttribute("src");
 	let div_width = output.clientWidth;
