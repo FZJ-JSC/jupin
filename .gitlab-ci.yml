@@ -16,12 +16,12 @@ generate_files_jusuf:
       aud: "https://gitlab.jsc.fz-juelich.de"
   stage: generate_files
   tags:
-    - jusuf
+    - jedi
     - login
   script:
     - ml JUBE
     - cd verification/
-    - jube-autorun -r "-t js gp cb_all cd_all" all_hello_reduced.xml
+    - jube-autorun -r "-t jd gp cb_all cd_all" all_hello_reduced.xml
   artifacts:
     paths: 
       - verification/pin_logs/

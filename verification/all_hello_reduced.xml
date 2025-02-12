@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jube>
   <benchmark name="hello" outpath="run_all_reduced">
-    <comment>psmgmt-5.1.61-0 </comment>
+    <comment>pin_check</comment>
 
     <parameterset name="compile_param">
       <!--<parameter name="system" type="string" tag="jr">jr</parameter>-->
@@ -10,13 +10,20 @@
       <!--<parameter name="system" type="string" tag="jwt">jwt</parameter>-->
       <!--<parameter name="system" type="string" tag="jwb">jwb</parameter>-->
       <parameter name="system" type="string" tag="js">js</parameter>
+      <parameter name="system" type="string" tag="jd">jd</parameter>
 
       <parameter name="load_modules" type="string" tag="ip">ml Intel ParaStationMPI</parameter>
+      <parameter name="load_modules" type="string" tag="ip23">ml Stages/2023; ml Intel ParaStationMPI</parameter>
       <parameter name="load_modules" type="string" tag="ii">ml Intel IntelMPI</parameter>
+      <parameter name="load_modules" type="string" tag="ii23">ml Stages/2023; ml Intel IntelMPI</parameter>
       <parameter name="load_modules" type="string" tag="gp">ml GCC ParaStationMPI</parameter>
-      
+      <parameter name="load_modules" type="string" tag="gp23">ml Stages/2023; ml GCC ParaStationMPI</parameter>
       <parameter name="source_dir" type="string">${jube_benchmark_home}</parameter>
       <parameter name="source_file" type="string">all_hello_world_mask.cpp</parameter>
+      <parameter name="source_file" type="string" tag="normal">hello_world_mask.c</parameter>
+      <parameter name="dir_suf" type="string"></parameter>
+      <parameter name="dir_suf" type="string" tag="normal">_normal</parameter>
+      <!--parameter name="source_file" type="string" tag="valantis">valantis_example.c</parameter-->
       <parameter name="exe_file" type="string">hello_world.exe</parameter>
     </parameterset>
 
@@ -35,6 +42,7 @@
     </step>
 
     <!--
+      JEDI numbering is different (no SMT)
       0-3: Pure OpenMP without SMT
       4-7: Pure OpenMP with SMT
       8-9: Hybrid with odd number of threads (w and w/o SMT)
@@ -44,23 +52,49 @@
     <!-- initial paramterset with corresponding set in $JUBE_INCLUDE_PATH/platform.xml -->
     <parameterset name="systemParameter" init_with="platform.xml">
       <parameter name="nodes" type="int">1</parameter>
-      <parameter name="i" type="int" mode="python">",".join([str(i) for i in range(0,1)])</parameter>
+      <parameter name="i" type="int" mode="python">
+	      {"jwt" : ",".join([str(i) for i in range(0,20)]),
+         "jw"  : ",".join([str(i) for i in range(0,20)]),
+         "jrt" : ",".join([str(i) for i in range(0,20)]),
+         "jr"  : ",".join([str(i) for i in range(0,20)]),
+         "js"  : ",".join([str(i) for i in range(0,20)]),
+         "jd": ",".join([str(i) for i in range(0,14)])}.get("${system}",0)
+      </parameter>
       <parameter name="tasks" type="int" mode="python">
-        {"js" : [ 1, 1, 1, 1, 1, 1, 1, 1, 16, 16, 16, 16, 64, 64, 127, 127, 128, 128, 192, 256][$i]}.get("${system}",0)
+	      {"jwt" : [ 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4,24,24,47,47,48,48,72,96][$i],
+         "jw"  : [ 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4,24,24,47,47,48,48,72,96][$i],
+         "jrt" : [ 1, 1, 1,  1, 1,  1,  1,  1,16,16,16,16,64,64,127,127,128,128,192,256][$i],
+         "jr"  : [ 1, 1, 1,  1, 1,  1,  1,  1,16,16,16,16,64,64,127,127,128,128,192,256][$i],
+         "js"  : [ 1, 1, 1,  1, 1,  1,  1,  1,16,16,16,16,64,64,127,127,128,128,192,256][$i],
+         "jd": [ 1, 1, 1,  1, 1, 4, 4, 8, 8,72,144,216,287,288][$i]}.get("${system}",0)
       </parameter>
       <parameter name="threadspertask" type="int" mode="python">
-        {"js" : [ 32, 64, 96, 128, 64, 128, 192, 256, 3, 3, 8, 8, 1, 1, 1, 1, 1, 1, 1, 1][$i]}.get("${system}",0)
+	      {"jwt" : [12,24,36,48,24,48,72,96, 3, 3,12,12, 1, 1, 1, 1, 1, 1, 1, 1][$i],
+         "jw"  : [12,24,36,48,24,48,72,96, 3, 3,12,12, 1, 1, 1, 1, 1, 1, 1, 1][$i],
+         "jrt" : [32,64,96,128,64,128,192,256, 3, 3, 8, 8, 1, 1,  1,  1,  1,  1,  1,  1][$i],
+         "jr"  : [32,64,96,128,64,128,192,256, 3, 3, 8, 8, 1, 1,  1,  1,  1,  1,  1,  1][$i],
+         "js"  : [32,64,96,128,64,128,192,256, 3, 3, 8, 8, 1, 1,  1,  1,  1,  1,  1,  1][$i],
+         "jd": [72,144,216,287,288, 1, 72, 3, 36, 1, 1,  1,  1,  1][$i]}.get("${system}",0)
+      </parameter>
+      <parameter name="tpc" type="int" mode="python">
+	      {"jwt" : [ 1, 1, 1, 1, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 2][$i],
+         "jw" : [ 1, 1, 1, 1, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 2][$i],
+         "jrt" : [ 1, 1, 1,  1, 2,  2,  2,  2, 1, 2, 1, 2, 1, 2,  1,  2,  1,  2,  2,  2][$i],
+         "jr" : [ 1, 1, 1,  1, 2,  2,  2,  2, 1, 2, 1, 2, 1, 2,  1,  2,  1,  2,  2,  2][$i],
+         "js" : [ 1, 1, 1,  1, 2,  2,  2,  2, 1, 2, 1, 2, 1, 2,  1,  2,  1,  2,  2,  2][$i],
+         "jd" : 1 }.get("${system}",0)
       </parameter>
 
       <parameter name="executable">./compile/${exe_file}</parameter>
       <parameter name="args_exec">${system}</parameter>
-      <parameter name="timelimit">00:02:00</parameter>
+      <parameter name="timelimit">00:05:00</parameter>
       <parameter name="env">${load_modules}</parameter>
-      <parameter name="measurement">time -p</parameter>
-      <parameter name="queue">batch</parameter> <!-- maint -A root-->
-      <parameter name="account">cstao</parameter> <!-- root, cstao -->
+      <parameter name="measurement"></parameter> <!-- time -p -->
+      <parameter name="queue" mode="python">
+	      {"jwt": "batch", "jw": "batch", "jrt": "maint", "jr": "dc-cpu-devel", "jd": "all"}.get("${system}",0)
+      </parameter> <!-- maint -A root-->
+      <parameter name="account" mode="python">"zam" if "${system}" == "jd" else "cstao"</parameter> <!-- root, cstao -->
       <parameter name="additional_job_config">#SBATCH --threads-per-core=${tpc}</parameter>
-
       <parameter name="filename">
         ${system}-${nodes}-${tasks}-${threadspertask}-${tpc}-${cpubind}-${node_dist}-${socket_dist}-${core_dist}
       </parameter>
@@ -73,6 +107,7 @@
       <parameter name="cpubind" tag="rank">rank</parameter>
       <parameter name="cpubind" tag="rank_ldom">rank_ldom</parameter>
       <parameter name="cpubind" tag="cores">cores</parameter>
+      <parameter name="cpubind" tag="threads">threads</parameter>
       <parameter name="cpubind" tag="cb_all">threads,rank,rank_ldom,cores</parameter>
       <parameter name="cpubind_arg" mode="python" separator="%">
         "--cpu-bind=v,${cpubind}" if "${cpubind}" != "" else ""
@@ -88,9 +123,6 @@
         "--distribution=${distribution}" if "${distribution}" != "" else ""
       </parameter>
 
-      <parameter name="tpc" type="int" mode="python">
-        {"js" : [ 1, 1, 1,  1, 2,  2,  2,  2, 1, 2, 1, 2, 1, 2,  1,  2,  1,  2,  2,  2][$i]}.get("${system}",0)
-      </parameter>
       <parameter name="tpc_arg">--threads-per-core=${tpc}</parameter>
 
       <parameter name="verbose"></parameter>
