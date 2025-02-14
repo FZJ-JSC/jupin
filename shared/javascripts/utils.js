@@ -9,24 +9,24 @@ import { Threads } from './Threads.js';
  */
 export let styles =   {"colors": ["#7393dd", "#ff8200", "#0064b5", "#80c6ff", "#00467f",
 								  "#b35b00", "#290aa3", "#ffc180" , "#1d0772"],
-					   "socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"]};
+					   "phys_socket_color": ["rgba(2, 61, 107, 0.3)", "rgba(179, 83, 0, 0.3)"]};
 
 export let supercomputer_attributes = {
-	"jw": {"sockets": 2, "cores": 24, "threads": 2, "gpus": [],
+	"jw": {"numa_sockets": 2, "phys_sockets": 2, "cores": 24, "threads": 2, "gpus": [],
 		   "affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
-	"jwg": {"sockets": 2, "cores": 20, "threads": 2, "gpus": [],
+	"jwg": {"numa_sockets": 2, "phys_sockets": 2, "cores": 20, "threads": 2, "gpus": [],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
-	"jwb": {"sockets": 8, "cores": 6, "threads": 2,"gpus": [3,1,7,5],
+	"jwb": {"numa_sockets": 8, "phys_sockets": 2, "cores": 6, "threads": 2,"gpus": [3,1,7,5],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/juwels/affinity.html"},
-	"jr": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
+	"jr": {"numa_sockets": 8, "phys_sockets": 2, "cores": 16, "threads": 2, "gpus": [],
 		   "affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
-	"jrg": {"sockets": 8, "cores": 16, "threads": 2,"gpus": [3,1,7,5],
+	"jrg": {"numa_sockets": 8, "phys_sockets": 2, "cores": 16, "threads": 2,"gpus": [3,1,7,5],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jureca/affinity.html"},
-	"js": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [],
+	"js": {"numa_sockets": 8, "phys_sockets": 2, "cores": 16, "threads": 2, "gpus": [],
 		   "affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"},
-	"jsg": {"sockets": 8, "cores": 16, "threads": 2, "gpus": [3],
+	"jsg": {"numa_sockets": 8, "phys_sockets": 2, "cores": 16, "threads": 2, "gpus": [3],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jusuf/affinity.html"},
-	"jd": {"sockets": 4, "cores": 72, "threads": 1, "gpus": [],
+	"jd": {"numa_sockets": 4, "phys_sockets": 4, "cores": 72, "threads": 1, "gpus": [],
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jedi/affinity.html"}};
 
 /**

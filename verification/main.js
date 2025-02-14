@@ -130,13 +130,13 @@ function createOutput(real_tasks, calc_tasks, options) {
 	//identify differences
 	let diff = new Array(outer_level);
 	for(let outer=0; outer<outer_level; outer++){
-		diff[outer] = new Array(options["sockets"]);
-		for(let socket=0; socket<options["sockets"]; socket++){
+		diff[outer] = new Array(options["numa_sockets"]);
+		for(let numa_socket=0; numa_socket<options["numa_sockets"]; numa_socket++){
 			let array_for_diff = new Array(options["threads"]);
 			for(let thread=0; thread<options["threads"];thread++){
 				array_for_diff[thread] = new Array(options["cores"]);
 			}
-			diff[outer][socket] = array_for_diff;
+			diff[outer][numa_socket] = array_for_diff;
 		}
 	}
 
@@ -185,18 +185,18 @@ function createContent(tasks, diff, options, rule_based){
 	let output = (rule_based) ? document.getElementById('output_calc') : document.getElementById('output_real');
 	output.innerHTML = "";
 	let gpus = utils.supercomputer_attributes[options["supercomputer"]]['gpus'];
-	let numa_per_socket = (options["sockets"] == 8) ? 4 : 1;
+	let numa_per_phys_socket = options["numa_sockets"] / options["phys_sockets"]
 
 	//get needed width and height
 	let thread_width = 20;
 	let thread_height = 0.9*20;
 	let space = 20;
 	let info_height = 15
-	let socket_height = options["threads"] * thread_height+info_height
-	let numa_width = options["cores"] * thread_width
-	let socket_width = numa_per_socket*numa_width+(numa_per_socket-1)*space
-	let node_height = (options["sockets"]/numa_per_socket) * socket_height + ((options["sockets"]/numa_per_socket) + 2) * space
-	let node_width = socket_width + 2 * space
+	let phys_socket_height = options["threads"] * thread_height+info_height
+	let numa_socket_width = options["cores"] * thread_width
+	let phys_socket_width = numa_per_phys_socket*numa_socket_width+(numa_per_phys_socket-1)*space
+	let node_height = options["phys_sockets"] * phys_socket_height + (options["phys_sockets"] + 2) * space
+	let node_width = phys_socket_width + 2 * space
 	let width = node_width + 2 * space;
 	let height = tasks.length * node_height + (tasks.length + 1) * space
 
@@ -238,86 +238,89 @@ function createContent(tasks, diff, options, rule_based){
 		headline.textContent += i+':';
 		svg.appendChild(headline);
 
-		for(let j=0; j<options["sockets"]; j++){ //Sockets
-			const socket = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-			socket.setAttribute("x", 2*space -0.25*space);
-			socket.setAttribute("y", 4* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket)-0.25*space);
-			socket.setAttribute("width", socket_width+0.5*space-0.1*thread_width);
-			socket.setAttribute("height", socket_height+0.5*space);
-			socket.setAttribute("fill-opacity", "0");
-			socket.setAttribute("stroke-width", "1");
-			socket.setAttribute("stroke", "#ADBDE3");
-			svg.appendChild(socket);
-			const info = document.createElementNS("http://www.w3.org/2000/svg", "text");
-			info.setAttribute("x", 2*space + (j%numa_per_socket) * (numa_width+space));
-			info.setAttribute("y", 4* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket)+0.7*info_height);
-			info.setAttribute("fill", "#023d6b");
-			info.setAttribute("font-family", "Arial, Helvetica, sans-serif");
-			info.setAttribute("font-size", "0.8em");
-			info.setAttribute("dominant-baseline", "auto");
-			info.textContent = "NUMA " + j
-			if (gpus.includes(j)) 
-				info.textContent += " / GPU " + gpus.indexOf(j)
-			svg.appendChild(info);
-			for(let l=0; l<options["cores"]; l++){ //Cores
-				for(let k=0; k<options["threads"]; k++){ //Threads
-					const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-					thread.setAttribute("x", 2*space + l * thread_width + (j%numa_per_socket) * (numa_width+space));
-					thread.setAttribute("y", 4* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket) + k * thread_height+info_height);
-					thread.setAttribute("width", 0.9*thread_width);
-					thread.setAttribute("height", thread_height);
-
-					let fontsize;
-					if (tasks[i][j][k][l]>99) {
-						fontsize = "0.7em";
-					} else if (tasks[i][j][k][l]>9) {
-						fontsize = "0.8em";
-					} else {
-						fontsize = "0.9em";
-					}
-					const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
-					pin.setAttribute("x", 2*space + (l+0.45) * thread_width + (j%numa_per_socket) * (numa_width+space));
-					pin.setAttribute("y", 4* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket) + (k+0.55) * thread_height+info_height);
-					pin.setAttribute("width", thread_width);
-					pin.setAttribute("height", thread_height);
-					pin.setAttribute("font-size", fontsize);
-					pin.setAttribute("text-anchor", "middle");
-					pin.setAttribute("dominant-baseline", "middle");
-
-					if(tasks[i][j][k][l] !== undefined){
-						pin.textContent = tasks[i][j][k][l];
-						thread.setAttribute("fill", utils.styles.colors[parseInt(tasks[i][j][k][l])%9]);
-						pin.setAttribute("fill", 'white');
-					}else{
-						thread.setAttribute("fill", utils.styles.socket_color[parseInt(j/numa_per_socket)%2]);
-						pin.setAttribute("fill", '#023d6b');
-						pin.textContent = 'x';
-					}
-
-					svg.appendChild(thread);
-					svg.appendChild(pin);
-				}
-				const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-				core.setAttribute("x", 2*space + l * thread_width + (j%numa_per_socket) * (numa_width+space));
-				core.setAttribute("y", 4* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket) +info_height);
-				core.setAttribute("width", 0.9*thread_width);
-				core.setAttribute("height", (options["threads"])*thread_height);
-				core.setAttribute("fill-opacity", "0");
-				core.setAttribute("stroke-width", "1");
-				core.setAttribute("stroke", "#023d6b");
-				svg.appendChild(core);
-				for(let k=0; k<options["threads"]; k++){ //Threads
-					//highlight difference
-					if(diff[i][j][k][l]) {
+		for (let m=0; m < options["phys_sockets"]; m++) {//physical sockets
+			const phys_socket = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+			phys_socket.setAttribute("x", 2*space -0.25*space);
+			phys_socket.setAttribute("y", 4* space + (node_height + space) * i + (phys_socket_height + space) * m-0.25*space);
+			phys_socket.setAttribute("width", phys_socket_width+0.5*space-0.1*thread_width);
+			phys_socket.setAttribute("height", phys_socket_height+0.5*space);
+			phys_socket.setAttribute("fill-opacity", "0");
+			phys_socket.setAttribute("stroke-width", "1");
+			phys_socket.setAttribute("stroke", "#ADBDE3");
+			svg.appendChild(phys_socket);
+			for(let j=0; j<numa_per_phys_socket; j++){ //NUMA-Sockets per physical socket
+				let numa_socket = m*numa_per_phys_socket+j
+				const info = document.createElementNS("http://www.w3.org/2000/svg", "text");
+				info.setAttribute("x", 2*space + j * (numa_socket_width+space));
+				info.setAttribute("y", 4* space + (node_height + space) * i + (phys_socket_height + space) * m+0.7*info_height);
+				info.setAttribute("fill", "#023d6b");
+				info.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+				info.setAttribute("font-size", "0.8em");
+				info.setAttribute("dominant-baseline", "auto");
+				info.textContent = "NUMA " + numa_socket
+				if (gpus.includes(numa_socket)) 
+					info.textContent += " / GPU " + gpus.indexOf(numa_socket)
+				svg.appendChild(info);
+				for(let l=0; l<options["cores"]; l++){ //Cores
+					for(let k=0; k<options["threads"]; k++){ //Threads
 						const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-						thread.setAttribute("x", 2*space + l * thread_width + (j%numa_per_socket) * (numa_width+space));
-						thread.setAttribute("y", 4* space + (node_height + space) * i + (socket_height + space) * Math.floor(j/numa_per_socket) + k * thread_height+info_height);
+						thread.setAttribute("x", 2*space + l * thread_width + j * (numa_socket_width+space));
+						thread.setAttribute("y", 4* space + (node_height + space) * i + (phys_socket_height + space) * m + k * thread_height+info_height);
 						thread.setAttribute("width", 0.9*thread_width);
 						thread.setAttribute("height", thread_height);
-						thread.setAttribute("fill-opacity","0")
-						thread.setAttribute("stroke-width", "3");
-						thread.setAttribute("stroke", "#ff0000");
+
+						let fontsize;
+						if (tasks[i][numa_socket][k][l]>99) {
+							fontsize = "0.7em";
+						} else if (tasks[i][numa_socket][k][l]>9) {
+							fontsize = "0.8em";
+						} else {
+							fontsize = "0.9em";
+						}
+						const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
+						pin.setAttribute("x", 2*space + (l+0.45) * thread_width + j * (numa_socket_width+space));
+						pin.setAttribute("y", 4* space + (node_height + space) * i + (phys_socket_height + space) * m + (k+0.55) * thread_height+info_height);
+						pin.setAttribute("width", thread_width);
+						pin.setAttribute("height", thread_height);
+						pin.setAttribute("font-size", fontsize);
+						pin.setAttribute("text-anchor", "middle");
+						pin.setAttribute("dominant-baseline", "middle");
+
+						if(tasks[i][numa_socket][k][l] !== undefined){
+							pin.textContent = tasks[i][numa_socket][k][l];
+							thread.setAttribute("fill", utils.styles.colors[parseInt(tasks[i][numa_socket][k][l])%9]);
+							pin.setAttribute("fill", 'white');
+						}else{
+							thread.setAttribute("fill", utils.styles.phys_socket_color[m%2]);
+							pin.setAttribute("fill", '#023d6b');
+							pin.textContent = 'x';
+						}
+
 						svg.appendChild(thread);
+						svg.appendChild(pin);
+					}
+					const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+					core.setAttribute("x", 2*space + l * thread_width + j * (numa_socket_width+space));
+					core.setAttribute("y", 4* space + (node_height + space) * i + (phys_socket_height + space) * m+info_height);
+					core.setAttribute("width", 0.9*thread_width);
+					core.setAttribute("height", (options["threads"])*thread_height);
+					core.setAttribute("fill-opacity", "0");
+					core.setAttribute("stroke-width", "1");
+					core.setAttribute("stroke", "#023d6b");
+					svg.appendChild(core);
+					for(let k=0; k<options["threads"]; k++){ //Threads
+						//highlight difference
+						if(diff[i][numa_socket][k][l]) {
+							const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+							thread.setAttribute("x", 2*space + l * thread_width + j * (numa_socket_width+space));
+							thread.setAttribute("y", 4* space + (node_height + space) * i + (phys_socket_height + space) * m + k * thread_height+info_height);
+							thread.setAttribute("width", 0.9*thread_width);
+							thread.setAttribute("height", thread_height);
+							thread.setAttribute("fill-opacity","0")
+							thread.setAttribute("stroke-width", "3");
+							thread.setAttribute("stroke", "#ff0000");
+							svg.appendChild(thread);
+						}
 					}
 				}
 			}
@@ -347,7 +350,8 @@ export function getOptions(file) {
 	let testcase = file.replace(".out","").split("-");
 
 	options["supercomputer"] = testcase[0];
-	options["sockets"] = utils.supercomputer_attributes[options["supercomputer"]]['sockets'];
+	options["numa_sockets"] = utils.supercomputer_attributes[options["supercomputer"]]['numa_sockets'];
+	options["phys_sockets"] = utils.supercomputer_attributes[options["supercomputer"]]['phys_sockets'];
 	options["cores"] = utils.supercomputer_attributes[options["supercomputer"]]['cores'];
 	options["threads"] = utils.supercomputer_attributes[options["supercomputer"]]['threads'];
 	options["nodes"] = parseInt(testcase[1]);
@@ -376,13 +380,13 @@ export function createTasksFromFile(file_array, options) {
 	let tasks = new Array(outer_level);
 	let threads = utils.supercomputer_attributes[options["supercomputer"]]['threads'];
 	for(let outer=0; outer<outer_level; outer++){
-		tasks[outer] = new Array(options["sockets"]);
-		for(let socket=0; socket<options["sockets"]; socket++){
+		tasks[outer] = new Array(options["numa_sockets"]);
+		for(let numa_socket=0; numa_socket<options["numa_sockets"]; numa_socket++){
 			let array_for_task = new Array(threads);
 			for(let thread=0; thread<threads;thread++){
 				array_for_task[thread] = new Array(options["cores"]);
 			}
-			tasks[outer][socket] = array_for_task;
+			tasks[outer][numa_socket] = array_for_task;
 		}
 	}
 
@@ -395,16 +399,16 @@ export function createTasksFromFile(file_array, options) {
 			node_map.set(file_array[i][3], node_map.size);
 		}
 		let node = node_map.get(file_array[i][3]);
-		let socket = parseInt(position / options["cores"]) % options["sockets"];
+		let numa_socket = parseInt(position / options["cores"]) % options["numa_sockets"];
 		let core = position % options["cores"];
-		let thread = parseInt(position / (options["cores"] * options["sockets"]));
+		let thread = parseInt(position / (options["cores"] * options["numa_sockets"]));
 		let out = (options["mode"] === 'task') ? rank : node;
 		if (options["cpu_bind"] === "cores") {
 			for(let t=0; t<options["threads_per_core"]; t++) {
-				tasks[out][socket][t][core] = rank;
+				tasks[out][numa_socket][t][core] = rank;
 			}
 		} else {
-			tasks[out][socket][thread][core] = rank;
+			tasks[out][numa_socket][thread][core] = rank;
 		}
 	}
 	return tasks;

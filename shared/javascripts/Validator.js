@@ -1,7 +1,7 @@
 export class Validator {
 	constructor(options){
 		this._options = options;
-		this._available_cores_per_node = this._options["sockets"]*this._options["cores"] * this._options["threads_per_core"];
+		this._available_cores_per_node = this._options["numa_sockets"]*this._options["cores"] * this._options["threads_per_core"];
 	}
 
 	/**
