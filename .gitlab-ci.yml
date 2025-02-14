@@ -35,6 +35,7 @@ compare_pinning:
   script:
     - mv shared/javascripts/* verification/
     - cd verification/
+    - echo 0 > exit_code.txt
     - node comparison.js pin_logs/ || echo $? > exit_code.txt
   artifacts:
     paths:
