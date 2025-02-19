@@ -156,7 +156,7 @@
 
     
     <!-- prepare submit script and submit the job to the batch system-->
-    <step name="exe" suffix="${nodes}-${tasks}-${threadspertask}-${tpc}-${cpubind}-${node_dist}-${socket_dist}-${core_dist}" depend="compile" procs="12">
+    <step name="exe" suffix="${nodes}-${tasks}-${threadspertask}-${tpc}-${cpubind}-${node_dist}-${socket_dist}-${core_dist}" depend="compile" procs="12" max_async="64">
       <use>systemParameter</use>            
       <!-- <use from="platform.xml">executeset</use> -->
       <use>executeset</use>
