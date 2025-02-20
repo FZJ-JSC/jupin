@@ -114,3 +114,194 @@ export function getCalcPinning(options) {
 	}
 	return CPU_Bind.getPinning();
 }
+
+/**
+ * Generates the visualization for a given pinning mask
+ */
+export function createContent(tasks, output, id, options, diff=undefined, title=""){
+	//get output div and empty
+	output.innerHTML = "";
+	let gpus = supercomputer_attributes[options["supercomputer"]]['gpus'];
+	let numa_per_phys_socket = options["numa_sockets"] / options["phys_sockets"]
+
+	//get needed width and height
+	let thread_width = 20;
+	let thread_height = 0.9*20;
+	let space = 20;
+	let info_height = 15
+	let info_width = 60
+	let phys_socket_height = options["threads"] * thread_height+info_height
+	let total_phys_socket_height = phys_socket_height + space+info_height
+	let numa_socket_width = options["cores"] * thread_width
+	let total_numa_socket_width = numa_socket_width+space
+	let phys_socket_width = numa_per_phys_socket*total_numa_socket_width-space
+	let node_height = info_height + space + options["phys_sockets"] * total_phys_socket_height //Warum 2space
+	let total_node_height = node_height + space
+	let node_width = phys_socket_width + 2 * space
+	let width = node_width + 2 * space;
+	let height = space + tasks.length * total_node_height
+	let title_height = (title === "") ? 0 : space;
+
+	// create the svg element
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svg.setAttribute("id", id);
+
+	// set width and height
+	svg.setAttribute("width", width);
+	svg.setAttribute("height", height);
+
+	if (title !== "") {
+		const svgtitle = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		svgtitle.setAttribute("x", "10");
+		svgtitle.setAttribute("y", space);
+		svgtitle.setAttribute("fill", "#023d6b");
+		svgtitle.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+		svgtitle.setAttribute("font-weight", "bold");
+		svgtitle.textContent = title;
+		svg.appendChild(svgtitle);
+	}
+
+	//generate the visualization of the pinning mask
+	for(let i=0; i<tasks.length; i++){ //Tasks/Nodes
+		const node = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		node.setAttribute("x", space);
+		node.setAttribute("y", space + total_node_height * i+title_height);
+		node.setAttribute("width", node_width);
+		node.setAttribute("height", node_height);
+		node.setAttribute("fill", "#ebebeb");
+		node.setAttribute("stroke-width", "1");
+		node.setAttribute("stroke", "#023d6b");
+		svg.appendChild(node);
+		const headline = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		headline.setAttribute("x", space);
+		headline.setAttribute("y", title_height+ info_height + total_node_height * i + 20);
+		headline.setAttribute("fill", "#023d6b");
+		headline.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+		headline.setAttribute("font-weight", "bold");
+		headline.textContent = (options["mode"] === "node") ? "Node " : "Task ";
+		headline.textContent += i+':';
+		svg.appendChild(headline);
+
+		for (let m=0; m < options["phys_sockets"]; m++) {//physical sockets
+			const phys_socket = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+			phys_socket.setAttribute("x", 1.75*space);
+			phys_socket.setAttribute("y", title_height+ 1.75* space + total_node_height * i + total_phys_socket_height * m+2*info_height);
+			phys_socket.setAttribute("width", phys_socket_width+0.5*space-0.1*thread_width);
+			phys_socket.setAttribute("height", phys_socket_height+0.5*space);
+			phys_socket.setAttribute("fill-opacity", "0");
+			phys_socket.setAttribute("stroke-width", "1");
+			phys_socket.setAttribute("stroke", "#ADBDE3");
+			svg.appendChild(phys_socket);
+			const infobox = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+			infobox.setAttribute("x", 1.75*space);
+			infobox.setAttribute("y", title_height+ 1.75* space + total_node_height * i + total_phys_socket_height * m+info_height);
+			infobox.setAttribute("width", info_width);
+			infobox.setAttribute("height", info_height);
+			infobox.setAttribute("fill", "#ADBDE3");
+			infobox.setAttribute("stroke", "#ADBDE3");
+			svg.appendChild(infobox);
+			const sinfo = document.createElementNS("http://www.w3.org/2000/svg", "text");
+			sinfo.setAttribute("x", 1.75*space+0.5*info_width);
+			sinfo.setAttribute("y", title_height+ 1.75* space + total_node_height * i + total_phys_socket_height * m+1.6*info_height);
+			sinfo.setAttribute("fill", "#023d6b");
+			sinfo.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+			sinfo.setAttribute("font-size", "0.8em");
+			sinfo.setAttribute("dominant-baseline", "middle");
+			sinfo.setAttribute("text-anchor", "middle");
+			sinfo.textContent = "Socket " + m
+			svg.appendChild(sinfo)
+			for(let j=0; j<numa_per_phys_socket; j++){ //NUMA-Sockets per physical socket
+				let numa_socket = m*numa_per_phys_socket+j
+				const info = document.createElementNS("http://www.w3.org/2000/svg", "text");
+				info.setAttribute("x", 2*space + j * total_numa_socket_width);
+				info.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m+2.7*info_height);
+				info.setAttribute("fill", "#023d6b");
+				info.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+				info.setAttribute("font-size", "0.8em");
+				sinfo.setAttribute("dominant-baseline", "middle");
+				info.textContent = "NUMA " + numa_socket
+				if (gpus.includes(numa_socket)) 
+					info.textContent += " / GPU " + gpus.indexOf(numa_socket)
+				svg.appendChild(info);
+				for(let l=0; l<options["cores"]; l++){ //Cores
+					for(let k=0; k<options["threads"]; k++){ //Threads
+						const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+						thread.setAttribute("x", 2*space + l * thread_width + j * total_numa_socket_width);
+						thread.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + k * thread_height+3*info_height);
+						thread.setAttribute("width", 0.9*thread_width);
+						thread.setAttribute("height", thread_height);
+
+						let fontsize;
+						if (tasks[i][numa_socket][k][l]>99) {
+							fontsize = "0.7em";
+						} else if (tasks[i][numa_socket][k][l]>9) {
+							fontsize = "0.8em";
+						} else {
+							fontsize = "0.9em";
+						}
+						const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
+						pin.setAttribute("x", 2*space + (l+0.45) * thread_width + j * total_numa_socket_width);
+						pin.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + (k+0.55) * thread_height+3*info_height);
+						pin.setAttribute("width", thread_width);
+						pin.setAttribute("height", thread_height);
+						pin.setAttribute("font-size", fontsize);
+						pin.setAttribute("text-anchor", "middle");
+						pin.setAttribute("dominant-baseline", "middle");
+
+						if(tasks[i][numa_socket][k][l] !== undefined){
+							pin.textContent = tasks[i][numa_socket][k][l];
+							thread.setAttribute("fill", styles.colors[parseInt(tasks[i][numa_socket][k][l])%9]);
+							pin.setAttribute("fill", 'white');
+						}else{
+							thread.setAttribute("fill", styles.phys_socket_color[m%2]);
+							pin.setAttribute("fill", '#023d6b');
+							pin.textContent = 'x';
+						}
+
+						svg.appendChild(thread);
+						svg.appendChild(pin);
+					}
+					const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+					core.setAttribute("x", 2*space + l * thread_width + j * total_numa_socket_width);
+					core.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m+3*info_height);
+					core.setAttribute("width", 0.9*thread_width);
+					core.setAttribute("height", (options["threads"])*thread_height);
+					core.setAttribute("fill-opacity", "0");
+					core.setAttribute("stroke-width", "1");
+					core.setAttribute("stroke", "#023d6b");
+					svg.appendChild(core);
+					if (diff !== undefined) {
+						for(let k=0; k<options["threads"]; k++){ //Threads
+							//highlight difference
+							if(diff[i][numa_socket][k][l]) {
+								const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+								thread.setAttribute("x", 2*space + l * thread_width + j * total_numa_socket_width);
+								thread.setAttribute("y", title_height+2* space + total_node_height * i + total_phys_socket_height * m + k * thread_height+3*info_height);
+								thread.setAttribute("width", 0.9*thread_width);
+								thread.setAttribute("height", thread_height);
+								thread.setAttribute("fill-opacity","0")
+								thread.setAttribute("stroke-width", "3");
+								thread.setAttribute("stroke", "#ff0000");
+								svg.appendChild(thread);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//keep zoom
+	let src = document.getElementById('zoom').getAttribute("src");
+	let div_width = output.clientWidth;
+	let scale = div_width/width;
+	if(src === "images/plus.png"){
+		svg.style.transform = "scale("+scale+")";
+		svg.style.transformOrigin  = "top left";
+	}else{
+		svg.style.transform = "scale(1)";
+	}
+
+	// attach container to document
+	output.appendChild(svg);
+}
