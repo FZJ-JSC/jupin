@@ -116,6 +116,26 @@ export function getCalcPinning(options) {
 }
 
 /**
+ * Check if color is light or dark (to change font color)
+ */
+function isLightColor(color) { //<--color in the way '#RRGGBB
+    if (color.length == 7) {
+        const rgb = [
+            parseInt(color.substring(1, 3), 16),
+            parseInt(color.substring(3, 5), 16),
+            parseInt(color.substring(5), 16),
+        ];
+        const luminance =
+            (0.2126 * rgb[0]) / 255 +
+            (0.7152 * rgb[1]) / 255 +
+            (0.0722 * rgb[2]) / 255;
+        return luminance > 0.5;
+    }
+    return false
+}
+
+
+/**
  * Generates the visualization for a given pinning mask
  */
 export function createContent(tasks, output, id, options, diff=undefined, title=""){
@@ -135,7 +155,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 	let numa_socket_width = options["cores"] * thread_width
 	let total_numa_socket_width = numa_socket_width+space
 	let phys_socket_width = numa_per_phys_socket*total_numa_socket_width-space
-	let node_height = info_height + space + options["phys_sockets"] * total_phys_socket_height //Warum 2space
+	let node_height = info_height + space + options["phys_sockets"] * total_phys_socket_height 
 	let total_node_height = node_height + space
 	let node_width = phys_socket_width + 2 * space
 	let width = node_width + 2 * space;
@@ -173,8 +193,8 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 		node.setAttribute("stroke", "#023d6b");
 		svg.appendChild(node);
 		const headline = document.createElementNS("http://www.w3.org/2000/svg", "text");
-		headline.setAttribute("x", space);
-		headline.setAttribute("y", title_height+ info_height + total_node_height * i + 20);
+		headline.setAttribute("x", 1.25*space);
+		headline.setAttribute("y", title_height+ info_height + total_node_height * i + 1.25*space);
 		headline.setAttribute("fill", "#023d6b");
 		headline.setAttribute("font-family", "Arial, Helvetica, sans-serif");
 		headline.setAttribute("font-weight", "bold");
@@ -190,20 +210,20 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 			phys_socket.setAttribute("height", phys_socket_height+0.5*space);
 			phys_socket.setAttribute("fill-opacity", "0");
 			phys_socket.setAttribute("stroke-width", "1");
-			phys_socket.setAttribute("stroke", "#ADBDE3");
+			phys_socket.setAttribute("stroke", "#888888");
 			svg.appendChild(phys_socket);
 			const infobox = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 			infobox.setAttribute("x", 1.75*space);
 			infobox.setAttribute("y", title_height+ 1.75* space + total_node_height * i + total_phys_socket_height * m+info_height);
 			infobox.setAttribute("width", info_width);
 			infobox.setAttribute("height", info_height);
-			infobox.setAttribute("fill", "#ADBDE3");
-			infobox.setAttribute("stroke", "#ADBDE3");
+			infobox.setAttribute("fill", "#888888");
+			infobox.setAttribute("stroke", "#888888");
 			svg.appendChild(infobox);
 			const sinfo = document.createElementNS("http://www.w3.org/2000/svg", "text");
 			sinfo.setAttribute("x", 1.75*space+0.5*info_width);
 			sinfo.setAttribute("y", title_height+ 1.75* space + total_node_height * i + total_phys_socket_height * m+1.6*info_height);
-			sinfo.setAttribute("fill", "#023d6b");
+			sinfo.setAttribute("fill", "white");
 			sinfo.setAttribute("font-family", "Arial, Helvetica, sans-serif");
 			sinfo.setAttribute("font-size", "0.8em");
 			sinfo.setAttribute("dominant-baseline", "middle");
@@ -241,7 +261,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 						}
 						const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
 						pin.setAttribute("x", 2*space + (l+0.45) * thread_width + j * total_numa_socket_width);
-						pin.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + (k+0.55) * thread_height+3*info_height);
+						pin.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + (k+0.6) * thread_height+3*info_height);
 						pin.setAttribute("width", thread_width);
 						pin.setAttribute("height", thread_height);
 						pin.setAttribute("font-size", fontsize);
@@ -250,16 +270,29 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 
 						if(tasks[i][numa_socket][k][l] !== undefined){
 							pin.textContent = tasks[i][numa_socket][k][l];
-							thread.setAttribute("fill", styles.colors[parseInt(tasks[i][numa_socket][k][l])%9]);
-							pin.setAttribute("fill", 'white');
+							let background_color = styles.colors[parseInt(tasks[i][numa_socket][k][l])%styles.colors.length];
+							thread.setAttribute("fill", background_color);
+							pin.setAttribute("fill", isLightColor(background_color)?'black':'white');
 						}else{
-							thread.setAttribute("fill", styles.phys_socket_color[m%2]);
+							thread.setAttribute("fill", 'rgba(61, 61, 61, 0.2)');
 							pin.setAttribute("fill", '#023d6b');
 							pin.textContent = 'x';
 						}
-
 						svg.appendChild(thread);
 						svg.appendChild(pin);
+
+						if (k!==0){
+							const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+							let y = title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + k * thread_height+3*info_height;
+							let x = 2*space + (l+0.45) * thread_width + j * total_numa_socket_width;
+							line.setAttribute("x1", x-0.45*thread_width);
+							line.setAttribute("y1", y);
+							line.setAttribute("x2", x+0.45*thread_width);
+							line.setAttribute("y2", y);
+							line.setAttribute("stroke-dasharray","2,2");
+							line.setAttribute("stroke","#023d6b")
+							svg.appendChild(line);
+						}
 					}
 					const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 					core.setAttribute("x", 2*space + l * thread_width + j * total_numa_socket_width);
