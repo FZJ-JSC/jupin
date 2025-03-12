@@ -4,17 +4,16 @@ stages:
   - deploy
   - result
 
-workflow:
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "push"
-      when: never
-    - when: always
-
-generate_files_jusuf:
+generate_files_jedi:
   id_tokens:
     SITE_ID_TOKEN:
       aud: "https://gitlab.jsc.fz-juelich.de"
   stage: generate_files
+  rules:
+    - when: manual # Manually triggered
+      changes:
+        - verification/**/* # all files under folder 'verification'
+        - shared/**/* # all files under folder 'shared'
   tags:
     - jedi
     - login
@@ -30,6 +29,10 @@ generate_files_jusuf:
 compare_pinning:
   stage: compare
   image: node:latest
+  rules:
+    - changes:
+        - verification/**/* # all files under folder 'verification'
+        - shared/**/* # all files under folder 'shared'
   tags:
     - public-docker
   script:
@@ -45,6 +48,10 @@ compare_pinning:
 
 pages:
   stage: deploy
+  rules:
+    - changes:
+        - verification/**/* # all files under folder 'verification'
+        - shared/**/* # all files under folder 'shared'
   script:
     - mv shared public
     - mv verification/results.json public/results.json
@@ -58,6 +65,13 @@ pages:
   
 check:
   stage: result
+  needs: 
+    - job: compare_pinning
+      artifacts: true
+  rules:
+    - changes:
+        - verification/**/* # all files under folder 'verification'
+        - shared/**/* # all files under folder 'shared'
   dependencies:
     - compare_pinning
   script:
@@ -66,3 +80,21 @@ check:
         echo "Errors occurred during the comparison.";
         exit 1;
       fi
+
+pages:production:
+  stage: deploy
+  needs: []
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"' # Only on the master branch
+      when: manual # Manually triggered
+      changes:
+        - webtool/**/* # all files under folder 'webtool'
+        - shared/**/* # all files under folder 'shared'
+  script:
+    - mv webtool/index.html shared/index.html
+    - mv webtool/main.js shared/javascripts/main.js
+    - echo "Deploying to production"
+    - "sshpass -e -P 'passphrase for key' rsync -rlgoDzP --del shared/* apps_pinning_tool:"
+  environment:
+    name: production
+    url: https://apps.fz-juelich.de/jsc/llview/pinning/
