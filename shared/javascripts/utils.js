@@ -246,8 +246,9 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 				for(let l=0; l<options["cores"]; l++){ //Cores
 					for(let k=0; k<options["threads"]; k++){ //Threads
 						const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+						const thread_y = title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + k * thread_height+3*info_height
 						thread.setAttribute("x", 2*space + l * thread_width + j * total_numa_socket_width);
-						thread.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + k * thread_height+3*info_height);
+						thread.setAttribute("y", thread_y);
 						thread.setAttribute("width", 0.9*thread_width);
 						thread.setAttribute("height", thread_height);
 
@@ -261,21 +262,22 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 						}
 						const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
 						pin.setAttribute("x", 2*space + (l+0.45) * thread_width + j * total_numa_socket_width);
-						pin.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + (k+0.6) * thread_height+3*info_height);
+						pin.setAttribute("y", thread_y+0.45*thread_width); // Position of the text is in the middle of the thread block
 						pin.setAttribute("width", thread_width);
 						pin.setAttribute("height", thread_height);
 						pin.setAttribute("font-size", fontsize);
 						pin.setAttribute("text-anchor", "middle");
-						pin.setAttribute("dominant-baseline", "middle");
 
 						if(tasks[i][numa_socket][k][l] !== undefined){
 							pin.textContent = tasks[i][numa_socket][k][l];
 							let background_color = styles.colors[parseInt(tasks[i][numa_socket][k][l])%styles.colors.length];
 							thread.setAttribute("fill", background_color);
 							pin.setAttribute("fill", isLightColor(background_color)?'black':'white');
+							pin.setAttribute("dominant-baseline", "central"); // Vertically align the numbers centered
 						}else{
 							thread.setAttribute("fill", 'rgba(61, 61, 61, 0.2)');
 							pin.setAttribute("fill", '#023d6b');
+							pin.setAttribute("dominant-baseline", "middle"); // Vertically align the non-capital 'x' centered
 							pin.textContent = 'x';
 						}
 						svg.appendChild(thread);
