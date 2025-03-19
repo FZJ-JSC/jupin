@@ -4,7 +4,7 @@ stages:
   - deploy
   - result
 
-generate_files_jedi:
+generate_files_jedi: # read pinning on hpc-system
   id_tokens:
     SITE_ID_TOKEN:
       aud: "https://gitlab.jsc.fz-juelich.de"
@@ -26,7 +26,7 @@ generate_files_jedi:
       - verification/pin_logs/
     expire_in: "1 hour"
 
-compare_pinning:
+compare_pinning: # compare pinning of the webtool with pinning on the hpc-system
   stage: compare
   image: node:latest
   rules:
@@ -46,7 +46,7 @@ compare_pinning:
       - verification/exit_code.txt
     expire_in: "1 hour"
 
-pages:
+pages: # deploy the internal GitLba Pages that show the results of the comparison
   stage: deploy
   rules:
     - changes:
@@ -63,7 +63,7 @@ pages:
       - public/
     expire_in: "1 hour"
   
-check:
+check: # check if pipeline needs to fail (because differences in the pinning occurred)
   stage: result
   needs: 
     - job: compare_pinning
@@ -81,7 +81,7 @@ check:
         exit 1;
       fi
 
-pages:production:
+pages:production: # copies necessary files to webserver to deploy the public pinning-tool
   stage: deploy
   needs: []
   rules:

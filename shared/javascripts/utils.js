@@ -250,6 +250,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 	svg.setAttribute("width", width);
 	svg.setAttribute("height", height);
 
+	// add a title
 	if (title !== "") {
 		const svgtitle = document.createElementNS("http://www.w3.org/2000/svg", "text");
 		svgtitle.setAttribute("x", "10");
@@ -263,7 +264,8 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 
 	//generate the visualization of the pinning mask
 	for(let i=0; i<tasks.length; i++){ //Tasks/Nodes
-		const node = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		// Add a node
+		const node = document.createElementNS("http://www.w3.org/2000/svg", "rect"); // Rectangle around a node
 		node.setAttribute("x", space);
 		node.setAttribute("y", space + total_node_height * i+title_height);
 		node.setAttribute("width", node_width);
@@ -272,7 +274,8 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 		node.setAttribute("stroke-width", "1");
 		node.setAttribute("stroke", "#023d6b");
 		svg.appendChild(node);
-		const headline = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
+		const headline = document.createElementNS("http://www.w3.org/2000/svg", "text"); // Name/Title of the node
 		headline.setAttribute("x", 1.25*space);
 		headline.setAttribute("y", title_height+ info_height + total_node_height * i + 1.25*space);
 		headline.setAttribute("fill", "#023d6b");
@@ -283,7 +286,8 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 		svg.appendChild(headline);
 
 		for (let m=0; m < options["phys_sockets"]; m++) {//physical sockets
-			const phys_socket = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+			// Add a physical socket
+			const phys_socket = document.createElementNS("http://www.w3.org/2000/svg", "rect"); // Rectangle around the physical socket
 			phys_socket.setAttribute("x", 1.75*space);
 			phys_socket.setAttribute("y", title_height+ 1.75* space + total_node_height * i + total_phys_socket_height * m+2*info_height);
 			phys_socket.setAttribute("width", phys_socket_width+0.5*space-0.1*thread_width);
@@ -292,7 +296,8 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 			phys_socket.setAttribute("stroke-width", "1");
 			phys_socket.setAttribute("stroke", "#888888");
 			svg.appendChild(phys_socket);
-			const infobox = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+
+			const infobox = document.createElementNS("http://www.w3.org/2000/svg", "rect"); // rectangle for the Name of the physical socket
 			infobox.setAttribute("x", 1.75*space);
 			infobox.setAttribute("y", title_height+ 1.75* space + total_node_height * i + total_phys_socket_height * m+info_height);
 			infobox.setAttribute("width", info_width);
@@ -300,7 +305,8 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 			infobox.setAttribute("fill", "#888888");
 			infobox.setAttribute("stroke", "#888888");
 			svg.appendChild(infobox);
-			const sinfo = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
+			const sinfo = document.createElementNS("http://www.w3.org/2000/svg", "text"); // Name of the physical socket
 			sinfo.setAttribute("x", 1.75*space+0.5*info_width);
 			sinfo.setAttribute("y", title_height+ 1.75* space + total_node_height * i + total_phys_socket_height * m+1.6*info_height);
 			sinfo.setAttribute("fill", "white");
@@ -310,9 +316,11 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 			sinfo.setAttribute("text-anchor", "middle");
 			sinfo.textContent = "Socket " + m
 			svg.appendChild(sinfo)
+
 			for(let j=0; j<numa_per_phys_socket; j++){ //NUMA-Sockets per physical socket
 				let numa_socket = m*numa_per_phys_socket+j
-				const info = document.createElementNS("http://www.w3.org/2000/svg", "text");
+				// Add a NUMA-socket
+				const info = document.createElementNS("http://www.w3.org/2000/svg", "text"); // Name of the NUMA-socket and info about GPU connection
 				info.setAttribute("x", 2*space + j * total_numa_socket_width);
 				info.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m+2.7*info_height);
 				info.setAttribute("fill", "#023d6b");
@@ -323,16 +331,18 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 				if (gpus.includes(numa_socket)) 
 					info.textContent += " / GPU " + gpus.indexOf(numa_socket)
 				svg.appendChild(info);
+
 				for(let l=0; l<options["cores"]; l++){ //Cores
 					for(let k=0; k<options["threads"]; k++){ //Threads
-						const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+						// Add a thread
+						const thread = document.createElementNS("http://www.w3.org/2000/svg", "rect"); // rectangle for a thread
 						const thread_y = title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + k * thread_height+3*info_height
 						thread.setAttribute("x", 2*space + l * thread_width + j * total_numa_socket_width);
 						thread.setAttribute("y", thread_y);
 						thread.setAttribute("width", 0.9*thread_width);
 						thread.setAttribute("height", thread_height);
 
-						let fontsize;
+						let fontsize; // adapt the fontsize of the numbers to fit in the box
 						if (tasks[i][numa_socket][k][l]>99) {
 							fontsize = "0.7em";
 						} else if (tasks[i][numa_socket][k][l]>9) {
@@ -340,7 +350,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 						} else {
 							fontsize = "0.9em";
 						}
-						const pin = document.createElementNS("http://www.w3.org/2000/svg", "text");
+						const pin = document.createElementNS("http://www.w3.org/2000/svg", "text"); // text inside a thread
 						pin.setAttribute("x", 2*space + (l+0.45) * thread_width + j * total_numa_socket_width);
 						pin.setAttribute("y", thread_y+0.45*thread_width); // Position of the text is in the middle of the thread block
 						pin.setAttribute("width", thread_width);
@@ -348,13 +358,13 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 						pin.setAttribute("font-size", fontsize);
 						pin.setAttribute("text-anchor", "middle");
 
-						if(tasks[i][numa_socket][k][l] !== undefined){
+						if(tasks[i][numa_socket][k][l] !== undefined){ //thread is used
 							pin.textContent = tasks[i][numa_socket][k][l];
 							let background_color = styles.colors[parseInt(tasks[i][numa_socket][k][l])%styles.colors.length];
 							thread.setAttribute("fill", background_color);
 							pin.setAttribute("fill", isLightColor(background_color)?'black':'white');
 							pin.setAttribute("dominant-baseline", "central"); // Vertically align the numbers centered
-						}else{
+						}else{ // thread is not used
 							thread.setAttribute("fill", 'rgba(61, 61, 61, 0.2)');
 							pin.setAttribute("fill", '#023d6b');
 							pin.setAttribute("dominant-baseline", "middle"); // Vertically align the non-capital 'x' centered
@@ -364,6 +374,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 						svg.appendChild(pin);
 
 						if (k!==0){
+							// Add a dashed line between threads and SMT threads
 							const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 							let y = title_height+ 2* space + total_node_height * i + total_phys_socket_height * m + k * thread_height+3*info_height;
 							let x = 2*space + (l+0.45) * thread_width + j * total_numa_socket_width;
@@ -376,6 +387,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 							svg.appendChild(line);
 						}
 					}
+					//Add a rectangle to group all threads of a core
 					const core = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 					core.setAttribute("x", 2*space + l * thread_width + j * total_numa_socket_width);
 					core.setAttribute("y", title_height+ 2* space + total_node_height * i + total_phys_socket_height * m+3*info_height);
@@ -385,6 +397,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 					core.setAttribute("stroke-width", "1");
 					core.setAttribute("stroke", "#023d6b");
 					svg.appendChild(core);
+					
 					if (diff !== undefined) {
 						for(let k=0; k<options["threads"]; k++){ //Threads
 							//highlight difference

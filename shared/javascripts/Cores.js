@@ -1,5 +1,6 @@
 import { CPU_Bind } from './CPU_Bind.js';
 
+// TODO: needs to be updated
 export class Cores extends CPU_Bind{
 	/**
 	 * Calculates for a specific CPU of a specific task to which NUMA-socket, core and thread it is pinned.
@@ -12,12 +13,14 @@ export class Cores extends CPU_Bind{
 		if(this._options["distribution_socket"] === 'block'){
 			if(this._options["threads_per_core"]===1){
 				switch(this._options["distribution_core"]){
+					// Distribution-Core Block
 					case('block'):
 						thread =(cpu+(task_number*this._options["cpu_per_task"]))%this._options["threads_per_core"];
 						core = parseInt((cpu+(task_number*this._options["cpu_per_task"]))/this._options["threads_per_core"])%this._options["cores"];
 						numa_socket = this._numa_socket_arr[parseInt((task_number*this._options["cpu_per_task"]+cpu)/
 							(this._options["threads_per_core"]*this._options["cores"]))%this._options["numa_sockets"]];
 						break;
+					// Distribution-Core Cyclic
 					case('cyclic'):
 						thread = cpu%this._options["threads_per_core"];
 						core = (task_number*parseInt(this._options["cpu_per_task"]/this._options["threads_per_core"]+0.5)
@@ -25,6 +28,7 @@ export class Cores extends CPU_Bind{
 						numa_socket = this._numa_socket_arr[parseInt((task_number*(this._options["cpu_per_task"]+this._options["cpu_per_task"]%
 								this._options["threads_per_core"])+cpu)/(this._options["cores"]*this._options["threads_per_core"]))%this._options["numa_sockets"]];
 						break;
+					// Distribution-Core Fcyclic
 					case('fcyclic'):
 						if(this._options["cores"]%this._options["cpu_per_task"]===0 || this._options["cpu_per_task"]%this._options["cores"]===0){
 							core = (task_number*this._options["cpu_per_task"]+cpu)%this._options["cores"]; 
@@ -53,15 +57,18 @@ export class Cores extends CPU_Bind{
 					(this._options["cores"]*this._options["threads_per_core"])))%this._options["numa_sockets"]];
 			if(this._options["threads_per_core"]!== 1){
 				switch(this._options["distribution_core"]){
+					// Distribution-Core Block
 					case('block'):
 						core = parseInt((cpu+(shift*this._options["cpu_per_task"]))/this._options["threads_per_core"])%this._options["cores"];
 						thread = (cpu+(shift*this._options["cpu_per_task"]))%this._options["threads_per_core"];
 						break;
+					// Distribution-Core Cyclic
 					case('cyclic'):
 						thread = cpu%this._options["threads_per_core"];
 						core = (parseInt(task_number/this._options["numa_sockets"])*parseInt(this._options["cpu_per_task"]/this._options["threads_per_core"]+0.5)
 								+parseInt(cpu/this._options["threads_per_core"]))%this._options["cores"];
 						break;
+					// Distribution-Core Fcyclic
 					case('fcyclic'):
 						core = ((parseInt(task_number/this._options["numa_sockets"])*this._options["cpu_per_task"])+cpu)%this._options["cores"];
 						thread = parseInt(((parseInt(task_number/this._options["numa_sockets"])*this._options["cpu_per_task"])+cpu)/(this._options["cores"]))%this._options["threads_per_core"];
@@ -78,10 +85,12 @@ export class Cores extends CPU_Bind{
 			if(this._options["threads_per_core"]!==1){
 				numa_socket = this._numa_socket_arr[(cpu+task_number)%this._options["numa_sockets"]];
 				switch(this._options["distribution_core"]){
+					// Distribution-Core Block
 					case('block'):
 						core = parseInt(((task_number*this._options["cpu_per_task"])+cpu)/(this._options["threads_per_core"]*this._options["numa_sockets"]));
 						thread = parseInt(((task_number*this._options["cpu_per_task"])+cpu)/this._options["numa_sockets"])%this._options["threads_per_core"];
 						break;
+					// Distribution-Core Fcyclic
 					case('fcyclic'):
 						core = parseInt(((task_number*this._options["cpu_per_task"])+cpu)/(this._options["numa_sockets"]))%this._options["cores"];
 						thread = parseInt((parseInt(((task_number*this._options["cpu_per_task"])+cpu)/

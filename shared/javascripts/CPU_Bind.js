@@ -167,7 +167,7 @@ export class CPU_Bind {
 	}
 
 	/**
-	 * Checks whether a specific thread in a given core, numa_socket and node is no longer free
+	 * Checks whether a specific thread in a given core, numa_socket and node is already binded
 	 */
 	isBinded(tasks, node, numa_socket, thread, core){
 		if (this._options["mode"] === "node") {
