@@ -80,17 +80,68 @@ export function setURL(){
 export function createCommand(options){
 	let command = document.getElementById('command');
 	command.innerHTML = "";
-	let p = document.createElement('code');
+
+	// Create the outer container that stores Slurm options
+	var container = document.createElement("div");
+	container.className = "code-container";
+
+	// Create the header for title and copy button
+	var titleBox = document.createElement("div");
+	titleBox.className = "title-box";
+	// Title
+	var titleSpan = document.createElement("span");
+	titleSpan.className = "title";
+	titleSpan.textContent = "Slurm srun options";
+	// Copy button
+	var copyBtn = document.createElement("button");
+	copyBtn.type = "button";
+	copyBtn.className = "copy-btn";
+	copyBtn.title = "Copy command";
+	var icon = document.createElement("i");
+	icon.className = "fa fa-copy";
+	copyBtn.appendChild(icon);
+	titleBox.appendChild(titleSpan);
+	titleBox.appendChild(copyBtn);
+
+	// Create the code block
+	var codeContainer = document.createElement("div");
+	codeContainer.className = "code-text";
+	var codeElem = document.createElement("code");
+	codeElem.id = 'slurmOptions';
+	// Getting the text of Slurm options from the selected options
 	if (options["mode"] === "hex2bin") {
-		p.innerHTML = '--cpu-bind=mask_cpu:' + options["hex2bin"];
+		codeElem.textContent = '--cpu-bind=mask_cpu:' + options["hex2bin"];
 	} else {
-		p.innerHTML = '-N ' + options["nodes"] + ' -n ' + options["task"] + ' -c ' + options["cpu_per_task"] + ' --cpu-bind=' + options["cpu_bind"] +
+		codeElem.textContent = '-N ' + options["nodes"] + ' -n ' + options["task"] + ' -c ' + options["cpu_per_task"] + ' --cpu-bind=' + options["cpu_bind"] +
 		' --distribution=' + options["distribution_node"] + ':' + options["distribution_socket"] + ':' + options["distribution_core"] +
 		' --threads-per-core=' + options["threads_per_core"];
 	}
+	codeContainer.appendChild(codeElem);
+	container.appendChild(titleBox);
+	container.appendChild(codeContainer);
 
-	p.style.textAlign = "center";
-	command.appendChild(p);
+	// Clear any previous content and insert the new container
+	command.appendChild(container);
+
+	// Add copy-to-clipboard when clicking on the button
+	copyBtn.addEventListener("click", copyToClipboard)
+}
+
+/**
+ * Copy text to clipboard
+ */
+export function copyToClipboard() {
+	var codeElem = document.getElementById('slurmOptions')
+	var textToCopy = codeElem.textContent;
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		navigator.clipboard.writeText(textToCopy)
+		.catch(function(err) {
+			console.error("Error copying text: ", err);
+		});
+	} else {
+		console.error("Cannot copy text");
+	}
+	return;
 }
 
 /**

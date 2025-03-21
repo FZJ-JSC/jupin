@@ -36,7 +36,6 @@ compare_pinning:
   tags:
     - public-docker
   script:
-    - mv shared/javascripts/* verification/
     - cd verification/
     - echo 0 > exit_code.txt
     - node comparison.js pin_logs/ || echo $? > exit_code.txt
@@ -53,11 +52,9 @@ pages:
         - verification/**/* # all files under folder 'verification'
         - shared/**/* # all files under folder 'shared'
   script:
-    - mv shared public
+    - mv verification/pages public
     - mv verification/results.json public/results.json
     - mv verification/pin_logs/ public/pin_logs/
-    - mv verification/index.html public/index.html
-    - mv verification/main.js public/javascripts/main.js
   artifacts:
     paths:
       - public/
@@ -91,10 +88,8 @@ pages:production:
         - webtool/**/* # all files under folder 'webtool'
         - shared/**/* # all files under folder 'shared'
   script:
-    - mv webtool/index.html shared/index.html
-    - mv webtool/main.js shared/javascripts/main.js
     - echo "Deploying to production"
-    - "sshpass -e -P 'passphrase for key' rsync -rlgoDzP --del shared/* apps_pinning_tool:"
+    - "sshpass -e -P 'passphrase for key' rsync -rlgoDzP --del webtool/* apps_pinning_tool:"
   environment:
     name: production
     url: https://apps.fz-juelich.de/jsc/llview/pinning/
