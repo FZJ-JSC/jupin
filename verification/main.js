@@ -86,7 +86,9 @@ async function generateForm() {
 		let output_calc = document.getElementById('output_calc');
 		let output_real = document.getElementById('output_real');
 		output_calc.innerHTML = '<div id="warning"><i class="fa fa-cog fa-spin"></i> There are no files for these options</div>';
+		output_real.innerHTML = '';
 		output_real.style.height = "0%";
+		output_calc.style.borderBottom = "0";
 		output_calc.style.height = "100%";
 		return;
 	}
@@ -175,6 +177,7 @@ function createOutput(real_tasks, calc_tasks, options) {
 		utils.createContent(real_tasks, document.getElementById('output_real'), "real_content", options, diff, 'REAL SITUATION:')
 		output_calc.innerHTML = "There is no rule-based version for these options!";
 	}
+	output_calc.style.borderBottom = "1px solid black";
 }
 
 /**

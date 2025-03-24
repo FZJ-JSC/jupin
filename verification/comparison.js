@@ -1,7 +1,7 @@
 import fs from 'fs'
-import { Validator } from './pages/javascripts/Validator.js';
-import {getOptions, createTasksFromFile} from './pages/javascripts/main.js';
-import {getCalcPinning} from './pages/javascripts/utils.js';
+import { Validator } from './Validator.js';
+import {getOptions, createTasksFromFile} from './main.js';
+import {getCalcPinning} from './utils.js';
 
 let data = {
 	equal: new Array(),
