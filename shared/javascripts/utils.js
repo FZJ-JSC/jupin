@@ -42,6 +42,7 @@ export function switchZoom(src,svg,output,change=true){
 		if (change) document.getElementById('zoom').setAttribute("src", "images/plus.png");
 		svg.style.transform = "scale("+scale+")";
 		svg.style.transformOrigin  = "top left";
+		output.scrollLeft = 0;
 	//zoom in
 	}else{
 		if (change) document.getElementById('zoom').setAttribute("src", "images/minus.png");
