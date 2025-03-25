@@ -74,7 +74,7 @@ select {
 	height: 100%;
 	position: relative;
 	background-color: white;
-	overflow: scroll;
+	overflow: auto;
 }
 
 #selection form fieldset {
@@ -156,15 +156,17 @@ select {
 	margin-right: 5px;
 }
 
-.output {
-	width: 100%;
-	height: calc(50% - 15px);
+#output {
+	height: 100%;
+	overflow: auto;
+}
+
+#output_calc, #output_real {
 	overflow: scroll;
 }
 
-#output {
-	height: 100%;
-	overflow: scroll;
+#output_real:not(:empty) {
+	border-top: 1px solid black;
 }
 
 #output.zoomed, .output.zoomed {

@@ -88,7 +88,6 @@ async function generateForm() {
 		output_calc.innerHTML = '<div id="warning"><i class="fa fa-cog fa-spin"></i> There are no files for these options</div>';
 		output_real.innerHTML = '';
 		output_real.style.height = "0%";
-		output_calc.style.borderBottom = "0";
 		output_calc.style.height = "100%";
 		return;
 	}
@@ -167,8 +166,8 @@ function createOutput(real_tasks, calc_tasks, options) {
 	let output_real = document.getElementById('output_real');
 
 	if(calc_tasks) {
-		output_real.style.height = "calc(50% - 15px)";
-		output_calc.style.height = "calc(50% - 15px)";
+		output_real.style.height = "50%";
+		output_calc.style.height = "50%";
 		utils.createContent(calc_tasks, document.getElementById('output_calc'), "calc_content", options, diff, 'RULE-BASED:')
 		utils.createContent(real_tasks, document.getElementById('output_real'), "real_content", options, diff, 'REAL SITUATION:')
 	} else {
@@ -177,7 +176,6 @@ function createOutput(real_tasks, calc_tasks, options) {
 		utils.createContent(real_tasks, document.getElementById('output_real'), "real_content", options, diff, 'REAL SITUATION:')
 		output_calc.innerHTML = "There is no rule-based version for these options!";
 	}
-	output_calc.style.borderBottom = "1px solid black";
 }
 
 /**
