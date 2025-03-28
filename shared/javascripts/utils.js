@@ -131,11 +131,40 @@ export function createCommand(options){
 /**
  * Copy text to clipboard
  */
-export function copyToClipboard() {
+export function copyToClipboard(event) {
 	var codeElem = document.getElementById('slurmOptions')
 	var textToCopy = codeElem.textContent;
 	if (navigator.clipboard && navigator.clipboard.writeText) {
+		// Getting the copy button
+		const copyBtn = event.currentTarget; 
+		// Get the parent container (title-box) and the title span
+		const titleBox = copyBtn.parentElement;
+		const titleElem = titleBox.querySelector('.title');
+
 		navigator.clipboard.writeText(textToCopy)
+		.then(function () {
+			// Creating alert to show the field was copied
+			copyBtn.className = "copy-btn"
+			var messageSpan = copyBtn.querySelector(".copy-message");
+			if (!messageSpan) {
+				messageSpan = document.createElement("span");
+				messageSpan.className = "copy-message";
+				messageSpan.textContent = "Copied!";
+				messageSpan.style.opacity = "1";
+				messageSpan.style.transition = "opacity 0.5s ease";
+				// Insert messageSpan after the title span and before the button.
+				titleElem.insertAdjacentElement("afterend", messageSpan);
+			}
+			// After 3 seconds, fade out and then remove the message.
+			setTimeout(() => {
+				messageSpan.style.opacity = "0";
+				setTimeout(() => {
+					if (messageSpan) {
+					messageSpan.remove();
+					}
+				}, 500); // removal delay after fade-out transition
+			}, 3000);
+		})
 		.catch(function(err) {
 			console.error("Error copying text: ", err);
 		});

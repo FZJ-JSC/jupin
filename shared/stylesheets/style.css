@@ -35,7 +35,7 @@ header {
 main {
 	margin-top: 50px;
 	width: 100%;
-	height: calc(100vh - 100px);
+	height: calc(100vh - 90px);
 	font-family: Trebuche, Arial, sans-serif;
 	display: grid;
 	grid-template-columns: 0.2fr 0.8fr;
@@ -134,6 +134,12 @@ select {
 
 .copy-btn:hover {
 	color: #000;
+}
+
+.copy-message {
+	margin-right: 8px;
+	margin-left: auto;
+	font-size: 0.9rem;
 }
 
 .code-text {
