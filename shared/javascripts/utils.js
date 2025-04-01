@@ -144,8 +144,7 @@ export function copyToClipboard(event) {
 		navigator.clipboard.writeText(textToCopy)
 		.then(function () {
 			// Creating alert to show the field was copied
-			copyBtn.className = "copy-btn"
-			var messageSpan = copyBtn.querySelector(".copy-message");
+			var messageSpan = titleBox.querySelector(".copy-message");
 			if (!messageSpan) {
 				messageSpan = document.createElement("span");
 				messageSpan.className = "copy-message";
