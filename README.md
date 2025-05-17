@@ -1,3 +1,7 @@
+<div align="center">
+<img src="logo/jupin_logo_blue_transparent_background.pdf" alt="JuPin" height="170em"/>
+</div>
+
 # JuPin
 JuPin [yo͞o pin] is a set of tools for process pinning/affinity on High Performance Computers (HPC) consisting of two interrelated components:
 1. A web-based visualisation 
