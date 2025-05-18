@@ -93,6 +93,7 @@ pages:production: # copies necessary files to webserver to deploy the public pin
   script:
     - mv webtool/index.html shared/index.html
     - mv webtool/main.js shared/javascripts/main.js
+    - mv logo/jupin_logo_white.svg shared/jupin_logo_white.svg
     - echo "Deploying to production"
     - "sshpass -e -P 'passphrase for key' rsync -rlgoDzP --del shared/* apps_pinning_tool:"
   environment:
