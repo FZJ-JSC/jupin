@@ -1,5 +1,8 @@
 <div align="center">
-<img src="logo/jupin_logo_blue.svg" alt="JuPin" height="170em"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./logo/jupin_logo_white.svg">
+    <img alt="JuPin" src="./logo/jupin_logo_blue.svg" height="170em">
+  </picture>
 </div>
 
 # JuPin
