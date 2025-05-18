@@ -1,5 +1,5 @@
 <div align="center">
-<img src="logo/jupin_logo_blue_transparent_background.pdf" alt="JuPin" height="170em"/>
+<img src="logo/jupin_logo_blue.svg" alt="JuPin" height="170em"/>
 </div>
 
 # JuPin
