@@ -119,6 +119,7 @@ select {
 	position: relative;
 	background-color: white;
 	overflow: auto;
+	min-width: 300px;
 }
 
 #selection form fieldset {
