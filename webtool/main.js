@@ -49,8 +49,11 @@ window.addEventListener("DOMContentLoaded", () => {
 	document.getElementById("distribution_socket").addEventListener("change", function() {generateForm();});
 	document.getElementById("distribution_core").addEventListener("change", function() {generateForm();});
 	document.getElementById("zoom").addEventListener("click", function() {
-		utils.switchZoom(this.getAttribute("src"), document.getElementById('content'), document.getElementById('output'));
+		utils.switchZoom(document.getElementById('content'));
 	});
+	utils.adjustTooltipsPosition()
+	document.getElementById("selection").addEventListener('scroll', function() {utils.adjustTooltipsPosition();});
+	window.addEventListener('resize', function() {utils.adjustTooltipsPosition(); utils.keepZoom(document.getElementById('content'));});
 })
 
 /**

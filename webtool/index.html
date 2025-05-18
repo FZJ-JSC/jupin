@@ -28,9 +28,10 @@
 			<!-- left side of the webpage -->
 			<div id ="selection" class="two-column">
 				<form>
-					<span title='Choose a supercomputer partition on which you want to simulate the pinning.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<div class="tooltiptext">Choose a supercomputer partition on which you want to simulate the pinning.</div>
+					</div>
 					<label for="supercomputer">System:</label>
 					<select id="supercomputer">
 						<option selected value="jw">JUWELS</option>
@@ -45,9 +46,17 @@
 
 					<br><br><br>
 
-					<span title='Choose between the Node-Mode, the Task-Mode and the Hex2Bin-Mode. In the Node-Mode you can visualize the pinning amongst multiple nodes. In Task-Mode the pinning for a single node is visualized by showing each task individually. In the Hex2Bin-Mode you can enter a SLURM-Process-Pinning-Mask in hexadecimal to visualize it.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">
+							Choose between the Node-Mode, the Task-Mode and the Hex2Bin-Mode. 
+							<ul>
+								<li>Node-Mode: you can visualize the pinning amongst multiple nodes.</li>
+								<li>Task-Mode: the pinning for a single node is visualized by showing each task individually.</li>
+								<li>Hex2Bin-Mode: you can enter a SLURM-Process-Pinning-Mask in hexadecimal to visualize it.</li>
+							</ul>
+						</span>
+					</div>
 					<label for="mode"> Mode: </label>
 					<select id="mode">
 						<option value="task">Task</option>
@@ -57,42 +66,55 @@
 
 					<br><br><br>
 
-					<span title='Enter a SLURM-Process-Pinning-Mask in hexadecimal to visualize.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">Enter a SLURM-Process-Pinning-Mask in hexadecimal to visualize.</span>
+					</div>
 					<label for="hex2bin"> Mask: </label>
 					<input value="0x"  type="text" id="hex2bin">
 
 					<br><br><br>
 
 
-					<span title='Select the numbers of nodes on which you want to simulate the pinning. Only available in Node-Mode.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">Select the numbers of nodes on which you want to simulate the pinning. Only available in Node-Mode.</span>
+					</div>
 					<label for="nodes">Nodes:</label>
 					<input value="1" type="number" min="1" id="nodes">
 
 					<br><br><br>
 
-					<span title='Select the numbers of tasks per job.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">Select the numbers of tasks per job.</span>
+					</div>
 					<label for="task">Task:</label>
 					<input value="1" type="number" min="1" id="task">
 
 					<br><br><br>
 
-					<span title='Select the numbers of requested CPUs per task.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">Select the numbers of requested CPUs per task.</span>
+					</div>
 					<label for="cpu_per_task">CPU's per task:</label>
 					<input value="1" type="number" min="1" id="cpu_per_task">
 
 					<br><br><br>
 
-					<span title='Choose an option to bind the CPU threads per task. Rank: Each task is pinned to as many threads as it requests, just filling cores consecutively. Spread the threads and tasks to as many cores as possible. This type is not influenced by the second and third part of the distribution option. Threads: Each task is pinned to as many threads as it requests. Which threads each process gets is controlled by the distribution option. Rank_Ldom: Each task is pinned to as many threads as it requests, just filling the nodes rank by rank cycling NUMA-sockets and cores. This type is not influenced by the second and third level of the distribution option. The threads of a task are always packed to as few cores as possible. This is the same as cpu-bind=threads distribution=block:cyclic:block. Cores: In a first step the requested CPU threads of a task are assigned in exactly the same way as with cpu-bind=threads. But the final affinity mask for the task is the whole core where any thread is located that it is assigned to. This means if a task is assigned to any thread that is part of a core, it will be bound to the whole core. (The "whole" here means to each thread of the core that is allocated to the job)'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">
+							Choose an option to bind the CPU threads per task. 
+							<ul>
+							<li>Rank: Each task is pinned to as many threads as it requests, just filling cores consecutively. Spread the threads and tasks to as many cores as possible. This type is not influenced by the second and third part of the distribution option. </li>
+							<li>Threads: Each task is pinned to as many threads as it requests. Which threads each process gets is controlled by the distribution option. </li>
+							<li>Rank_Ldom: Each task is pinned to as many threads as it requests, just filling the nodes rank by rank cycling NUMA-sockets and cores. This type is not influenced by the second and third level of the distribution option. The threads of a task are always packed to as few cores as possible. This is the same as cpu-bind=threads distribution=block:cyclic:block. </li>
+							<li>Cores: In a first step the requested CPU threads of a task are assigned in exactly the same way as with cpu-bind=threads. But the final affinity mask for the task is the whole core where any thread is located that it is assigned to. This means if a task is assigned to any thread that is part of a core, it will be bound to the whole core. (The "whole" here means to each thread of the core that is allocated to the job)</li>
+							</ul>
+						</span>
+					</div>
 					<label for="cpu_bind">CPU-Bind:</label>
 					<select id="cpu_bind">
 						<option selected>threads</option>
@@ -103,17 +125,40 @@
 
 					<br><br><br>
 
-					<span title="Select the number of threads per core.">
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">Select the number of threads per core.</span>
+					</div>
 					<label for="threads_per_core">Threads per Core:</label>
 					<input value="1" type="number" min="1" max="2" id="threads_per_core">
 
 					<br><br><br>
 
-					<span title='Choose a distribution-option. The first part controls the distribution of the task over the nodes. Block: Distribute tasks to a node such that consecutive tasks share a node. Cyclic : Distribute tasks to a node such that consecutive tasks are distributed over consecutive nodes (in a round-robin fashion). The second part controls the distribution of tasks over NUMA-sockets inside one node. Block: Each NUMA-socket is first filled with tasks before the next NUMA-socket will be used. Cyclic: Each task will be assigned to the next NUMA-socket(s) in a round-robin fashion. Fcyclic: Each thread inside a task will be assigned to the next NUMA-socket in a round-robin fashion, spreading the task itself as much as possible over all NUMA-sockets. fcyclic implies cyclic. The third part controls the distribution of tasks over cores inside one node. Block: Each core is first filled with tasks before the next core will be used. Cyclic: Each task will be assigned to the next core(s) in a round-robin fashion. The threads of a task will fill the cores. Fcyclic: Each thread inside a task will be assigned to the next core in a round-robin fashion, spreading the task itself as much as possible over all cores. fcyclic implies cyclic.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">
+							Choose a distribution-option. 
+							The first part controls the distribution of the task over the nodes:
+							<ul>
+								<li>Block: Distribute tasks to a node such that consecutive tasks share a node. </li>
+								<li>Cyclic: Distribute tasks to a node such that consecutive tasks are distributed over consecutive nodes (in a round-robin fashion). </li>
+							</ul>
+							The second part controls the distribution of tasks over NUMA-sockets inside one node:
+							<ul>
+							<li>Block: Each NUMA-socket is first filled with tasks before the next NUMA-socket will be used. </li>
+							<li>Cyclic: Each task will be assigned to the next NUMA-socket(s) in a round-robin fashion. </li>
+							<li>Fcyclic: Each thread inside a task will be assigned to the next NUMA-socket in a round-robin fashion, spreading the task itself as much as possible over all NUMA-sockets. </li>
+							</ul>
+							Fcyclic implies cyclic.<br>
+							The third part controls the distribution of tasks over cores inside one node:
+							<ul>
+							<li>Block: Each core is first filled with tasks before the next core will be used. </li>
+							<li>Cyclic: Each task will be assigned to the next core(s) in a round-robin fashion. The threads of a task will fill the cores. </li>
+							<li>Fcyclic: Each thread inside a task will be assigned to the next core in a round-robin fashion, spreading the task itself as much as possible over all cores. </li>
+							</ul>
+							Fcyclic implies cyclic.
+						</span>
+					</div>
 					<label>Distribution:</label>
 					<fieldset>
 						<legend>Node</legend>
@@ -144,7 +189,10 @@
 					<div id='command'></div>
 				</form>
 
-				<img id="zoom" src="images/minus.png" alt="zoom" title="Zoom in or out">
+				<div class="tooltip tooltip-top right">
+					<i id="zoom" class='fa fa-minus-circle'></i>
+					<span class="tooltiptext">Zoom in or out</span>
+				</div>
 			</div>
 			<!-- right side of the webpage -->
 			<div id="output" class="two-column"></div>

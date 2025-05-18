@@ -24,6 +24,22 @@
 	-webkit-box-sizing: border-box;
 }
 
+/* Defining FZJ's design colors */
+:root {
+    --fzj-color-blue:  #023d6b;
+    --fzj-color-lightblue:  #adbde3;
+    --fzj-color-gray:  #ebebeb;
+    --fzj-color-yellow:  #faeb5a;
+    --fzj-color-yellow-transp:  rgba(250,235,90,0.2);
+    --fzj-color-red:  rgb(235,95,115);
+    --fzj-color-red-transp:  rgba(235,95,115,0.2);
+    --fzj-color-green:  #b9d25f;
+    --fzj-color-green-transp:  rgba(185,210,95,0.2);
+    --fzj-color-violet:  #af82b9;
+    --fzj-color-orange:  #fab45a;
+    --fzj-color-orange-transp:  rgba(250,180,90,0.2);
+}
+
 body {
 	background-color: #ebebeb;
 	font-family: "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
@@ -42,7 +58,7 @@ header {
 	font-family: Trebuche, Arial, sans-serif;
 	font-weight: bolder;
 	width: 100%;
-	background-color: #023d6b;
+	background-color: var(--fzj-color-blue);
 	height: 50px;
 	color: white;
 	margin-top: 0px;
@@ -62,7 +78,7 @@ main {
 }
 
 h5 {
-	color: #023d6b;
+	color: var(--fzj-color-blue);
 }
 
 form {
@@ -76,7 +92,7 @@ input {
 }
 
 hr {
-	border-color: #023d6b;
+	border-color: var(--fzj-color-blue);
 }
 
 select {
@@ -104,8 +120,8 @@ select {
 	border: 1px solid #EEE;
 }
 
-.fa-info-circle {
-	color: rgba(2, 61, 107, 0.3);
+.fa-info-circle, .fa-minus-circle, .fa-plus-circle {
+	color: var(--fzj-color-lightblue);
 	align-items: center;
 }
 
@@ -163,7 +179,7 @@ select {
 }
 
 .code-text {
-	border-color: #023d6b;
+	border-color: var(--fzj-color-blue);
 	border-width: 1px;
 	border-style: solid;
 	margin: 0px auto;
@@ -179,7 +195,8 @@ select {
 #zoom {
 	float: right;
 	height: 1em;
-	margin-right: 5px;
+	margin-bottom: 5px;
+	cursor: pointer;
 }
 
 #output {
@@ -187,7 +204,7 @@ select {
 	overflow: auto;
 }
 
-#output_calc, #output_real {
+.output {
 	overflow: scroll;
 }
 
@@ -225,7 +242,7 @@ select {
 }
 
 table {
-	color: #023d6b;
+	color: var(--fzj-color-blue);
 	text-align: center;
 	display: inline-block;
 	border-spacing: 1px;
@@ -242,7 +259,7 @@ td {
 
 footer {
 	width: 100%;
-	background-color: #023d6b;
+	background-color: var(--fzj-color-blue);
 	height: 40px;
 	color: white;
 	margin-bottom: 0px;
@@ -267,6 +284,10 @@ footer p {
 	float: left;
 	font-family: Trebuche, Arial, sans-serif;
 	font-weight: bolder;
+}
+
+.right {
+    float: right;
 }
 
 /*** Alert banner with button ***/
@@ -299,3 +320,79 @@ footer p {
 	color: black;
 }
 /*** End of Alert banner ***/
+
+/* Tooltip container */
+.tooltip {
+	position: relative;
+	display: inline-block;
+}
+
+.tooltip .fa-info-circle {
+	font-size: 16px;
+	cursor: help;
+	display: block;
+}
+
+.tooltip .tooltiptext {
+	position: fixed;        /* escape any overflow clipping */
+	opacity: 0;
+	max-width: 60vw;
+	width: auto;            /* shrink‐to‐fit up to 50vw */
+	background: #555;
+	color: #fff;
+	padding: 5px 7px;
+	border-radius: 4px;
+	font-size: 14px;
+	line-height: 1.4;
+	white-space: normal;
+	text-align: left;
+	transition: opacity 0.2s ease;
+	z-index: 9999;
+	overflow: visible;
+
+	/* fade-in */
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+	/* keep it in the layout and non-interactive when hidden: */
+	pointer-events: none;
+
+	ul {
+		margin: 0;
+	}
+}
+
+/* fade in */
+.tooltip .tooltiptext.show {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* bottom‐tooltip arrow */
+.tooltip .tooltiptext::after {
+	content: "";
+	position: absolute;
+	bottom: 100%;          /* at top edge of the box */
+	left: 12px;            /* arrow (8[width]+4[width/2])px from left of box */
+	right: auto;
+	width: 0;
+	margin-left: -5px;
+	height: 0;
+	border-style: solid;
+	border-width: 6px;
+	border-color: transparent transparent #555 transparent;
+}
+
+/* top‐tooltip arrow */
+.tooltip.tooltip-top .tooltiptext::after {
+	content: "";
+	position: absolute;
+	top: 100%;             /* at bottom edge of the box */
+	right: 8px;            /* arrow 8px from right of box */
+	left: auto;
+	width: 0;
+	height: 0;
+	margin-left: -5px;
+	border-style: solid;
+	border-width: 6px;
+	border-color: #555 transparent transparent transparent;
+}

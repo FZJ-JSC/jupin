@@ -46,7 +46,7 @@ compare_pinning: # compare pinning of the webtool with pinning on the hpc-system
       - verification/exit_code.txt
     expire_in: "1 hour"
 
-pages: # deploy the internal GitLba Pages that show the results of the comparison
+pages: # deploy the internal GitLab Pages that show the results of the comparison
   stage: deploy
   rules:
     - changes:

@@ -43,8 +43,7 @@ if (typeof window !== "undefined") {
 		});
 		document.getElementById("file").addEventListener("change", function() {generateForm();});
 		document.getElementById("zoom").addEventListener("click", function() {
-			utils.switchZoom(this.getAttribute("src"), document.getElementById('calc_content'), document.getElementById('output_calc'),false);
-			utils.switchZoom(this.getAttribute("src"), document.getElementById('real_content'), document.getElementById('output_real'));
+			utils.switchZoom([document.getElementById('calc_content'), document.getElementById('real_content')]);
 		});
 		document.getElementById("output_calc").addEventListener("scroll", function() {
 			syncScroll(this, document.getElementById('output_real'));
@@ -52,6 +51,9 @@ if (typeof window !== "undefined") {
 		document.getElementById("output_real").addEventListener("scroll", function() {
 			syncScroll(this, document.getElementById('output_calc'));
 		});
+		utils.adjustTooltipsPosition()
+		document.getElementById("selection").addEventListener('scroll', function() {utils.adjustTooltipsPosition();});
+		window.addEventListener('resize', function() {utils.adjustTooltipsPosition(); utils.keepZoom([document.getElementById('calc_content'), document.getElementById('real_content')]);});
 	})
 }
 
@@ -192,7 +194,7 @@ function createOutput(real_tasks, calc_tasks, options) {
 		utils.createContent(real_tasks, document.getElementById('output_real'), "real_content", options, diff, 'REAL SITUATION:')
 	} else {
 		output_calc.style.height = "20px";
-		output_real.style.height = "calc(100% - 50px)";
+		output_real.style.height = "calc(100% - 20px)";
 		utils.createContent(real_tasks, document.getElementById('output_real'), "real_content", options, diff, 'REAL SITUATION:')
 		output_calc.innerHTML = "There is no rule-based version for these options!";
 	}

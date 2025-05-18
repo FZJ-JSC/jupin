@@ -50,25 +50,39 @@ export let supercomputer_attributes = {
 			"affinity": "https://apps.fz-juelich.de/jsc/hps/jedi/affinity.html"}};
 
 /**
- * Zooms in/out on a given svg-element
+ * Change the current zoom on given svg-elements
  */
-export function switchZoom(src,svg,output,change=true){
-    if(!svg) return;
-	let div_width = output.clientWidth;
-	let svg_width = svg.clientWidth;
-	let scale = div_width/svg_width;
-	//zoom out
-	if(src === "images/minus.png"){
-		if (change) document.getElementById('zoom').setAttribute("src", "images/plus.png");
-		svg.style.transform = "scale("+scale+")";
-		svg.style.transformOrigin  = "top left";
-		output.scrollLeft = 0;
-	//zoom in
-	}else{
-		if (change) document.getElementById('zoom').setAttribute("src", "images/minus.png");
-		svg.style.transform = "scale(1)";
-	}
-	output.classList.toggle("zoomed")
+export function switchZoom(svgs) {
+	const svgList = Array.isArray(svgs) ? svgs : [svgs];
+	const zoomIcon = document.querySelector("#zoom");
+	const zoomed = zoomIcon.classList.contains("fa-plus-circle");
+
+	zoomIcon.classList.toggle("fa-plus-circle", !zoomed);
+	zoomIcon.classList.toggle("fa-minus-circle", zoomed);
+	svgList.forEach(svg => {
+		if (svg) {
+			let output = svg.parentElement
+			svg.style.transform = zoomed ? "scale(1)" : "scale("+output.clientWidth/svg.clientWidth+")";
+			if (!zoomed) output.scrollLeft  = 0;
+			output.classList.toggle("zoomed");
+		}
+	});
+}
+
+
+/**
+ * Apply the current zoom on given svg-elements
+ */
+export function keepZoom(svgs) {
+	const svgList = Array.isArray(svgs) ? svgs : [svgs];
+	const zoomed = document.querySelector("#zoom").classList.contains("fa-plus-circle");
+
+	svgList.forEach(svg => {
+		if (svg) {
+			let output = svg.parentElement
+			svg.style.transform = zoomed ? "scale("+output.clientWidth/svg.clientWidth+")" : "scale(1)";
+		}
+	});
 }
 
 /**
@@ -116,11 +130,14 @@ export function createCommand(options){
 	// Copy button
 	var copyBtn = document.createElement("button");
 	copyBtn.type = "button";
-	copyBtn.className = "copy-btn";
-	copyBtn.title = "Copy command";
+	copyBtn.className = "copy-btn tooltip tooltip-top right";
 	var icon = document.createElement("i");
 	icon.className = "fa fa-copy";
+	var tooltiptext = document.createElement("span");
+	tooltiptext.className = "tooltiptext";
+	tooltiptext.innerHTML = "Copy the slurm srun options";
 	copyBtn.appendChild(icon);
+	copyBtn.appendChild(tooltiptext);
 	titleBox.appendChild(titleSpan);
 	titleBox.appendChild(copyBtn);
 
@@ -216,6 +233,51 @@ export function getCalcPinning(options) {
 }
 
 /**
+ * adjusts the tooltip position
+ */
+export function adjustTooltipsPosition() {
+	document.querySelectorAll('.tooltip').forEach(tip => {
+		if (tip.dataset.tooltipInited) return;
+		tip.dataset.tooltipInited = 'true';
+
+		const icon   = tip.querySelector('i');
+		const bubble = tip.querySelector('.tooltiptext');
+		if (!icon || !bubble) return;
+
+		function positionBubble() {
+			const rect = icon.getBoundingClientRect();
+			const gap  = 8;
+
+			if (tip.classList.contains('tooltip-top')) {
+				// 1px inset so arrow isn't on the rounded corner
+				const left = rect.right - bubble.offsetWidth + rect.width/2 + 1;
+				bubble.style.left = `${left}px`;
+				bubble.style.top  = `${rect.top - bubble.offsetHeight - gap}px`;
+			} else {
+				const left = rect.left - rect.width/2;
+				bubble.style.left = `${left}px`;
+				bubble.style.top  = `${rect.bottom + gap}px`;
+			}
+		}
+
+		function show() {
+			positionBubble();
+			bubble.classList.add('show');
+		}
+		function hide() {
+			bubble.classList.remove('show');
+		}
+
+		icon.addEventListener('mouseenter', show);
+		icon.addEventListener('mouseleave', hide);
+		window.addEventListener('scroll', hide);
+		window.addEventListener('resize', () => {
+			if (bubble.classList.contains('show')) positionBubble();
+		});
+	});
+}
+
+/**
  * Check if color is light or dark (to change font color)
  */
 function isLightColor(color) { //<--color in the way '#RRGGBB
@@ -269,6 +331,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 	// set width and height
 	svg.setAttribute("width", width);
 	svg.setAttribute("height", height);
+	svg.style.transformOrigin = "top left";
 
 	// add a title
 	if (title !== "") {
@@ -439,17 +502,7 @@ export function createContent(tasks, output, id, options, diff=undefined, title=
 		}
 	}
 
-	//keep zoom
-	let src = document.getElementById('zoom').getAttribute("src");
-	let div_width = output.clientWidth;
-	let scale = div_width/width;
-	if(src === "images/plus.png"){
-		svg.style.transform = "scale("+scale+")";
-		svg.style.transformOrigin  = "top left";
-	}else{
-		svg.style.transform = "scale(1)";
-	}
-
 	// attach container to document
 	output.appendChild(svg);
+	keepZoom(svg);
 }

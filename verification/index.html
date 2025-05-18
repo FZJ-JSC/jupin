@@ -24,9 +24,16 @@
 			<!-- left side of the webpage -->
 			<div id ="selection" class="two-column">
 				<form>
-					<span title='Choose between the Node-Mode and the Task-Mode. In the Node-Mode you can visualize the pinning amongst multiple nodes. In Task-Mode the pinning for a single node is visualized by showing each task individually.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">
+							Choose between the Node-Mode and the Task-Mode. 
+							<ul>
+							<li>Node-Mode: you can visualize the pinning amongst multiple nodes.</li>
+							<li>Task-Mode the pinning for a single node is visualized by showing each task individually.</li>
+							</ul>
+						</span>
+					</div>
 					<label for="mode"> Mode: </label>
 					<select id="mode">
 						<option value="task">Task</option>
@@ -35,9 +42,12 @@
 
 					<br><br><br>
 
-					<span title='Choose which type of pinning setups you want to visualize. To do this, select from the categories “equal” (same pinning masks for real and calculated pinning), “unequal” (different pinning masks for real and calculated pinning) and “not implemented” (no implementation available for calculated pinning)'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">
+							Choose which type of pinning setups you want to visualize. To do this, select from the categories “equal” (same pinning masks for real and calculated pinning), “unequal” (different pinning masks for real and calculated pinning) and “not implemented” (no implementation available for calculated pinning).
+						</span>
+					</div>
 					<label for="category"> Category: </label>
 					<select id="category">
 						<option value="equal">equal</option>
@@ -47,9 +57,10 @@
 
 					<br><br><br>
 
-					<span title='Select a pinning setup for which the comparison should be displayed.'>
+					<div class="tooltip">
 						<i class='fa fa-info-circle'></i>
-					</span>
+						<span class="tooltiptext">Select a pinning setup for which the comparison should be displayed.</span>
+					</div>
 					<label for="file"> Pinning-Setup: </label>
 					<select id="file">
 						<optgroup id="jw" label="JUWELS"></optgroup>
@@ -69,7 +80,10 @@
 					<p id="difference"></p>
 				</form>
 
-				<img id="zoom" src="images/minus.png" alt="zoom" title="Zoom in or out">
+				<div class="tooltip tooltip-top right">
+					<i id="zoom" class='fa fa-minus-circle'></i>
+					<span class="tooltiptext">Zoom in or out</span>
+				</div>
 			</div>
        			<!-- right side of the webpage -->
 			<div id="output" class="two-column">
